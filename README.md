@@ -14,16 +14,16 @@ node server.js
 ```
 
 ### 2. Configure Frontend
-Edit `frontend/config.js`:
+Edit `config.js` in the root directory:
 ```javascript
 window.VAULTPAY_API_URL = "https://your-backend.railway.app/api/v1";
 window.VAULTPAY_BRAND   = { name: "YourPlatformName", color: "#5b4fff" };
 ```
 
 ### 3. Deploy Frontend
-- **Cloudflare Pages**: Connect GitHub repo → root = `frontend/` → deploy
-- **Netlify**: Drag-drop `frontend/` folder
-- **GitHub Pages**: Push `frontend/` → enable Pages
+- **Cloudflare Pages**: Connect GitHub repo → deploy
+- **Netlify**: Drag-drop the project folder
+- **GitHub Pages**: Push to repo → enable Pages
 
 ### 4. Visit Your Platform
 - `https://your-frontend.pages.dev/` → Marketing website
@@ -33,18 +33,17 @@ window.VAULTPAY_BRAND   = { name: "YourPlatformName", color: "#5b4fff" };
 ## 📁 Structure
 
 ```
-vaultpay-final/
-├── frontend/            → Static site (Cloudflare Pages / GitHub Pages)
-│   ├── config.js        ← EDIT THIS with your backend URL
-│   ├── index.html       → Marketing website
-│   ├── login.html       → Login page
-│   ├── signup.html      → Multi-step registration
-│   ├── dashboard/       → Merchant dashboard SPA
-│   ├── pay/             → Customer checkout page
-│   ├── assets/css/      → Shared styles
-│   ├── assets/js/       → Shared utilities
-│   ├── _redirects       → Cloudflare/Netlify routing
-│   └── _headers         → Security headers
+.
+├── config.js        ← EDIT THIS with your backend URL
+├── index.html       → Marketing website
+├── login.html       → Login page
+├── signup.html      → Multi-step registration
+├── dashboard/       → Merchant dashboard SPA
+├── pay/             → Customer checkout page
+├── assets/css/      → Shared styles
+├── assets/js/       → Shared utilities
+├── _redirects       → Cloudflare/Netlify routing
+├── _headers         → Security headers
 │
 ├── backend/             → Node.js API (Railway / Render / Fly.io)
 │   ├── server.js

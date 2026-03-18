@@ -74,28 +74,28 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # WEB
 ### Option A: Cloudflare Pages (Best — automatic `_redirects` support)
 
 1. Go to [pages.cloudflare.com](https://pages.cloudflare.com)
-2. Create application → Connect to Git → select `frontend/` folder
+2. Create application → Connect to Git → select your repo
 3. Build command: (leave empty — static site)
 4. Output directory: `/`
 5. Done! You get: `https://yourapp.pages.dev`
 
 ### Option B: GitHub Pages
 
-1. Push frontend folder to a GitHub repo
+1. Push your code to a GitHub repo
 2. Settings → Pages → Source: Deploy from branch → `/` root
 3. Your site: `https://yourusername.github.io/repo-name`
 4. The `404.html` handles SPA routing for GitHub Pages.
 
 ### Option C: Netlify
 
-1. Drag-drop the `frontend/` folder to [netlify.com/drop](https://app.netlify.com/drop)
+1. Drag-drop the project folder to [netlify.com/drop](https://app.netlify.com/drop)
 2. The `_redirects` file handles all routing automatically.
 
 ---
 
 ## Step 3 — Connect Frontend to Backend
 
-Edit `/frontend/config.js`:
+Edit `config.js` in the root directory:
 
 ```javascript
 window.VAULTPAY_API_URL = "https://your-backend.railway.app/api/v1";
@@ -198,17 +198,16 @@ Webhook fires to Your App → Fulfill order → Customer sees success
 ## Folder Structure
 
 ```
-vaultpay-final/
-├── frontend/               → Deploy to Cloudflare/GitHub/Netlify
-│   ├── config.js           ← EDIT THIS with your backend URL
-│   ├── _redirects          ← Cloudflare Pages routing
-│   ├── _headers            ← Security headers
-│   ├── login.html
-│   ├── signup.html
-│   ├── 404.html
-│   ├── dashboard/index.html
-│   ├── pay/index.html
-│   └── assets/
+.
+├── config.js           ← EDIT THIS with your backend URL
+├── _redirects          ← Cloudflare Pages routing
+├── _headers            ← Security headers
+├── login.html
+├── signup.html
+├── 404.html
+├── dashboard/index.html
+├── pay/index.html
+├── assets/
 │
 ├── backend/                → Deploy to Railway/Render/Fly.io
 │   ├── server.js
