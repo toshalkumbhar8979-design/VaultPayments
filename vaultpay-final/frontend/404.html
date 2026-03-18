@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Page Not Found — VaultPay</title>
+  <link rel="stylesheet" href="/assets/css/vp-global.css"/>
+  <!-- GitHub Pages SPA fix: redirect to index with hash -->
+  <script>
+    // For GitHub Pages: convert path to hash-based route
+    const path = window.location.pathname;
+    if (path && path !== '/') {
+      window.location.replace('/' + window.location.search + '#' + path.slice(1));
+    }
+  </script>
+</head>
+<body>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <div style="text-align:center;">
+    <div style="font-size:64px;margin-bottom:16px;">🔍</div>
+    <h1 style="font-size:28px;font-weight:900;margin-bottom:8px;">Page Not Found</h1>
+    <p style="color:#6b7280;margin-bottom:24px;">The page you're looking for doesn't exist.</p>
+    <a href="/" class="btn btn-primary">← Go Home</a>
+  </div>
+</div>
+</body>
+</html>

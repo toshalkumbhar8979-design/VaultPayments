@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>VaultPay — Developer-First Payment Gateway</title>
+  <meta name="description" content="Accept payments in minutes. QR codes, UPI, SMS verification, white-label checkout. Built for Indian developers."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --brand:#5b4fff;--brand-2:#ff4f9b;--accent:#00e5c0;
+      --bg:#06060f;--surface:#0c0c1e;--card:#111127;
+      --border:rgba(255,255,255,0.07);--text:#e2e2f0;--muted:#7070a0;--white:#fff;
+      --font:'Plus Jakarta Sans',sans-serif;--serif:'Instrument Serif',serif;--mono:'JetBrains Mono',monospace;
+    }
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;padding:0 40px;background:rgba(6,6,15,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto;}
+    .nav-logo-mark{width:34px;height:34px;background:linear-gradient(135deg,var(--brand),#8b5cf6);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+    .nav-logo-mark svg{width:17px;height:17px;fill:white;}
+    .nav-logo-text{font-size:18px;font-weight:900;color:var(--white);}
+    .nav-links{display:flex;gap:6px;list-style:none;margin-right:24px;}
+    .nav-links a{padding:7px 14px;border-radius:8px;font-size:14px;font-weight:600;color:var(--muted);text-decoration:none;transition:color .2s;}
+    .nav-links a:hover{color:var(--white);}
+    .nav-cta{display:flex;gap:10px;}
+    .btn-nav-ghost{padding:8px 18px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .2s;}
+    .btn-nav-ghost:hover{border-color:rgba(255,255,255,.2);color:var(--white);}
+    .btn-nav-primary{padding:8px 20px;background:linear-gradient(135deg,var(--brand),#7c6fff);border:none;border-radius:8px;color:white;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(91,79,255,.35);transition:all .2s;}
+    .btn-nav-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(91,79,255,.5);}
+
+    /* HERO */
+    .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:100px 24px 60px;position:relative;overflow:hidden;}
+    .hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(91,79,255,.15) 0%,transparent 60%);pointer-events:none;}
+    .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse at center,black 0%,transparent 70%);pointer-events:none;}
+    .hero-content{position:relative;max-width:820px;}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(91,79,255,.12);border:1px solid rgba(91,79,255,.25);border-radius:100px;padding:7px 16px;margin-bottom:28px;font-size:13px;font-weight:600;color:#a89dff;}
+    .hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s infinite;}
+    @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+    h1{font-size:clamp(44px,7vw,84px);font-weight:900;line-height:1.0;letter-spacing:-3px;color:var(--white);margin-bottom:20px;}
+    h1 .serif{font-family:var(--serif);font-style:italic;background:linear-gradient(135deg,var(--brand),var(--brand-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .hero-sub{font-size:19px;color:var(--muted);max-width:560px;margin:0 auto 40px;line-height:1.7;}
+    .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+    .btn-hero{padding:15px 32px;border:none;border-radius:10px;font-family:var(--font);font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .3s;}
+    .btn-hero-primary{background:linear-gradient(135deg,var(--brand),#7c6fff);color:white;box-shadow:0 8px 32px rgba(91,79,255,.4);}
+    .btn-hero-primary:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(91,79,255,.55);color:white;text-decoration:none;}
+    .btn-hero-outline{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:var(--text);}
+    .btn-hero-outline:hover{background:rgba(255,255,255,.1);color:white;}
+    .hero-stats{display:flex;gap:48px;justify-content:center;flex-wrap:wrap;margin-top:56px;padding-top:48px;border-top:1px solid var(--border);}
+    .hero-stat-num{font-size:32px;font-weight:900;color:white;letter-spacing:-1.5px;}
+    .hero-stat-num span{color:var(--brand);}
+    .hero-stat-lbl{font-size:13px;color:var(--muted);margin-top:2px;}
+
+    /* SECTIONS */
+    section{position:relative;}
+    .container{max-width:1160px;margin:0 auto;padding:0 24px;}
+    .section-pad{padding:96px 0;}
+    .eyebrow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:2.5px;color:var(--brand);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .eyebrow::before{content:'';width:18px;height:2px;background:var(--brand);border-radius:1px;}
+    h2{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-2px;color:var(--white);line-height:1.1;margin-bottom:16px;}
+    h2 em{font-family:var(--serif);font-style:italic;color:var(--brand);}
+    .section-sub{font-size:17px;color:var(--muted);line-height:1.7;max-width:480px;}
+
+    /* FEATURES */
+    .features{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:56px;}
+    .feat-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px 28px;transition:all .3s;position:relative;overflow:hidden;}
+    .feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--brand),transparent);opacity:0;transition:.3s;}
+    .feat-card:hover{border-color:rgba(91,79,255,.3);transform:translateY(-4px);}
+    .feat-card:hover::before{opacity:1;}
+    .feat-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:20px;}
+    .feat-card h3{font-size:18px;font-weight:800;color:var(--white);margin-bottom:10px;letter-spacing:-.3px;}
+    .feat-card p{font-size:14px;color:var(--muted);line-height:1.7;}
+
+    /* CODE SHOWCASE */
+    .code-window{background:#04040a;border:1px solid var(--border);border-radius:16px;overflow:hidden;font-family:var(--mono);font-size:13px;line-height:1.75;}
+    .code-bar{background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:8px;}
+    .code-dot{width:12px;height:12px;border-radius:50%;}
+    .code-file{font-size:12px;color:var(--muted);margin-left:auto;}
+    .code-body{padding:22px;overflow-x:auto;}
+    .ck{color:#c792ea;}.cs{color:#c3e88d;}.cn{color:#f78c6c;}.cm{color:#82aaff;}.cc{color:#546e7a;}.cv{color:#f07178;}.cp{color:#ffcb6b;}
+
+    /* PRICING */
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:56px;}
+    .price-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:36px 28px;transition:all .3s;}
+    .price-card:hover{transform:translateY(-4px);}
+    .price-card.featured{border-color:var(--brand);background:linear-gradient(145deg,rgba(91,79,255,.08),var(--card));position:relative;}
+    .price-card.featured::after{content:'Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--brand),var(--brand-2));color:white;font-size:11px;font-weight:800;padding:4px 16px;border-radius:20px;}
+    .price-tier{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px;}
+    .price-amount{font-size:48px;font-weight:900;color:var(--white);letter-spacing:-3px;margin-bottom:4px;}
+    .price-amount sup{font-size:20px;letter-spacing:0;}
+    .price-desc{font-size:13px;color:var(--muted);margin-bottom:24px;}
+    .price-divider{height:1px;background:var(--border);margin-bottom:24px;}
+    .price-features{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:28px;}
+    .price-features li{display:flex;gap:10px;font-size:14px;color:var(--text);}
+    .price-features li::before{content:'✓';color:var(--accent);font-weight:800;flex-shrink:0;}
+    .btn-price{width:100%;padding:13px;border-radius:10px;font-family:var(--font);font-size:14px;font-weight:800;cursor:pointer;border:none;transition:all .2s;}
+    .btn-price.outline{background:transparent;border:1.5px solid var(--border);color:var(--text);}
+    .btn-price.outline:hover{border-color:var(--brand);color:var(--brand);}
+    .btn-price.filled{background:linear-gradient(135deg,var(--brand),#7c6fff);color:white;box-shadow:0 4px 16px rgba(91,79,255,.35);}
+    .btn-price.filled:hover{transform:translateY(-1px);}
+
+    /* CTA */
+    .cta-section{text-align:center;padding:100px 24px;position:relative;overflow:hidden;}
+    .cta-glow{position:absolute;width:600px;height:600px;background:radial-gradient(ellipse,rgba(91,79,255,.1),transparent 65%);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+    .cta-section h2{max-width:640px;margin:0 auto 16px;}
+
+    /* FOOTER */
+    footer{border-top:1px solid var(--border);padding:56px 24px;}
+    .footer-grid{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:40px;}
+    .footer-brand p{font-size:14px;color:var(--muted);line-height:1.7;margin-top:14px;max-width:260px;}
+    .footer-col h4{font-size:14px;font-weight:800;color:var(--white);margin-bottom:16px;}
+    .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px;}
+    .footer-col ul li a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s;}
+    .footer-col ul li a:hover{color:var(--white);}
+    .footer-bottom{max-width:1160px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);}
+    .footer-bottom strong{color:var(--brand);}
+
+    /* RESPONSIVE */
+    @media(max-width:900px){.features,.pricing-grid{grid-template-columns:1fr;}.footer-grid{grid-template-columns:1fr 1fr;}.nav-links{display:none;}}
+    @media(max-width:600px){.footer-grid{grid-template-columns:1fr;}.hero-stats{gap:28px;}nav{padding:0 20px;}}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s,transform .7s;}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.1s;}.d2{transition-delay:.2s;}.d3{transition-delay:.3s;}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/></svg></div>
+    <span class="nav-logo-text">VaultPay</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#integrate">Integrate</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="/docs/">Docs</a></li>
+  </ul>
+  <div class="nav-cta">
+    <a href="/login.html" class="btn-nav-ghost">Sign In</a>
+    <a href="/signup.html" class="btn-nav-primary">Get Started Free →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge"><div class="dot"></div>Trusted by developers across India</div>
+    <h1>The <span class="serif">smartest</span> way<br/>to accept payments</h1>
+    <p class="hero-sub">QR codes, UPI, bank SMS acknowledgement — all in one API. Go live in 5 minutes, not 5 weeks.</p>
+    <div class="hero-btns">
+      <a href="/signup.html" class="btn-hero btn-hero-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Start Free — No Setup Fee
+      </a>
+      <a href="#integrate" class="btn-hero btn-hero-outline">View Integration →</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="hero-stat-num">₹<span>2.5</span>%</div><div class="hero-stat-lbl">Transaction Fee</div></div>
+      <div><div class="hero-stat-num"><span>99.9</span>%</div><div class="hero-stat-lbl">Uptime SLA</div></div>
+      <div><div class="hero-stat-num"><span>5</span>min</div><div class="hero-stat-lbl">To Go Live</div></div>
+      <div><div class="hero-stat-num"><span>10</span>+</div><div class="hero-stat-lbl">Payment Methods</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section-pad" id="features">
+  <div class="container">
+    <div class="reveal"><div class="eyebrow">Built Different</div>
+    <h2>Everything you need.<br/><em>Nothing you don't.</em></h2>
+    <p class="section-sub">Production-grade payment infrastructure that scales with your business.</p></div>
+    <div class="features">
+      <div class="feat-card reveal d1"><div class="feat-icon" style="background:rgba(91,79,255,.12);">📱</div><h3>Smart QR Payments</h3><p>Generate UPI-compatible QR codes dynamically per cart amount. Works with PhonePe, GPay, Paytm, BHIM and every UPI app.</p></div>
+      <div class="feat-card reveal d2"><div class="feat-icon" style="background:rgba(0,229,192,.12);">💬</div><h3>SMS Acknowledgement</h3><p>Customers paste their bank SMS. VaultPay auto-parses the amount and transaction ID to confirm payment instantly.</p></div>
+      <div class="feat-card reveal d3"><div class="feat-icon" style="background:rgba(255,79,155,.12);">✉️</div><h3>Instant Email Receipts</h3><p>Beautiful, branded receipts emailed automatically to customers. Customized with your business name and brand colors.</p></div>
+      <div class="feat-card reveal d1"><div class="feat-icon" style="background:rgba(251,191,36,.12);">🎨</div><h3>White-Label Checkout</h3><p>The checkout page auto-adapts to your brand. Your logo, your colors, your business name. One small "Powered by" badge.</p></div>
+      <div class="feat-card reveal d2"><div class="feat-icon" style="background:rgba(91,79,255,.12);">🔐</div><h3>Bank-Grade Security</h3><p>AES-256-GCM encryption, HMAC-SHA256 webhooks, bcrypt passwords, rate limiting, OWASP-compliant API.</p></div>
+      <div class="feat-card reveal d3"><div class="feat-icon" style="background:rgba(0,229,192,.12);">⚡</div><h3>3-SDK Support</h3><p>Official SDKs for Node.js, Python, and PHP. Zero external dependencies. Copy one file and start integrating.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CODE INTEGRATION -->
+<section class="section-pad" id="integrate" style="background:rgba(255,255,255,.01);">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;">
+      <div class="reveal">
+        <div class="eyebrow">Integration</div>
+        <h2>Live in <em>3 steps.</em></h2>
+        <p class="section-sub" style="margin-bottom:32px;">No complex dashboards. No confusing flows. A clean API that does exactly what you need.</p>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="display:flex;gap:16px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:12px;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--brand),#7c6fff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:white;flex-shrink:0;">1</div>
+            <div><h4 style="font-size:15px;font-weight:800;color:var(--white);margin-bottom:4px;">Register & Get API Keys</h4><p style="font-size:13px;color:var(--muted);">Create a free account, get your test and live API keys instantly.</p></div>
+          </div>
+          <div style="display:flex;gap:16px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:12px;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--brand),#7c6fff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:white;flex-shrink:0;">2</div>
+            <div><h4 style="font-size:15px;font-weight:800;color:var(--white);margin-bottom:4px;">Create Payment Order</h4><p style="font-size:13px;color:var(--muted);">Call our API with amount & customer info. Get back a hosted checkout URL + QR code.</p></div>
+          </div>
+          <div style="display:flex;gap:16px;padding:18px;background:var(--card);border:1px solid var(--border);border-radius:12px;">
+            <div style="width:36px;height:36px;background:linear-gradient(135deg,var(--brand),#7c6fff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:white;flex-shrink:0;">3</div>
+            <div><h4 style="font-size:15px;font-weight:800;color:var(--white);margin-bottom:4px;">Receive Signed Webhook</h4><p style="font-size:13px;color:var(--muted);">Get notified when payment is captured. Verify signature and fulfill your order.</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal d2">
+        <div class="code-window">
+          <div class="code-bar">
+            <div class="code-dot" style="background:#ff5f57;"></div>
+            <div class="code-dot" style="background:#febc2e;"></div>
+            <div class="code-dot" style="background:#28c840;"></div>
+            <span class="code-file">checkout.js</span>
+          </div>
+          <div class="code-body"><pre><span class="cc">// npm install  (zero extra deps)</span>
+<span class="ck">const</span> <span class="cv">VaultPay</span> = <span class="cm">require</span>(<span class="cs">'./sdk/vaultpay'</span>);
+
+<span class="cc">// Initialize with your API key</span>
+<span class="ck">const</span> <span class="cv">vp</span> = <span class="ck">new</span> <span class="cv">VaultPay</span>(<span class="cs">'vp_live_...'</span>);
+
+<span class="cc">// Create a payment (10 lines!)</span>
+<span class="ck">const</span> <span class="cv">payment</span> = <span class="ck">await</span> <span class="cv">vp</span>.<span class="cp">payments</span>.<span class="cm">create</span>({
+  <span class="cp">order_id</span>:  <span class="cs">'ORD-001'</span>,
+  <span class="cp">amount</span>:    <span class="cn">49900</span>,  <span class="cc">// ₹499 in paise</span>
+  <span class="cp">currency</span>:  <span class="cs">'INR'</span>,
+  <span class="cp">customer</span>: {
+    <span class="cp">name</span>:  <span class="cs">'Arjun Sharma'</span>,
+    <span class="cp">email</span>: <span class="cs">'arjun@example.com'</span>,
+    <span class="cp">phone</span>: <span class="cs">'+919876543210'</span>
+  },
+  <span class="cp">redirect_url</span>: <span class="cs">'https://yoursite.com/thanks'</span>
+});
+
+<span class="cc">// Redirect customer to hosted checkout</span>
+<span class="cv">res</span>.<span class="cm">redirect</span>(<span class="cv">payment</span>.<span class="cp">gateway_url</span>);
+<span class="cc">// → QR generated ✓ Email sent ✓ Webhook fires ✓</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section-pad" id="pricing">
+  <div class="container" style="text-align:center;">
+    <div class="reveal"><div class="eyebrow" style="justify-content:center;">Simple Pricing</div>
+    <h2>No surprises. <em>Ever.</em></h2>
+    <p class="section-sub" style="margin:0 auto;">Pay only when you earn. No monthly fees, no hidden charges, no setup costs.</p></div>
+    <div class="pricing-grid reveal">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount"><sup>₹</sup>0</div>
+        <div class="price-desc">+ 2.5% per transaction</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>Up to ₹5L/month volume</li>
+          <li>QR + UPI payments</li>
+          <li>SMS acknowledgement</li>
+          <li>Email receipts</li>
+          <li>Webhook notifications</li>
+          <li>Test mode included</li>
+        </ul>
+        <a href="/signup.html" class="btn-price outline">Get Started Free</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Growth</div>
+        <div class="price-amount"><sup>₹</sup>999</div>
+        <div class="price-desc">per month + 1.8% per transaction</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>Unlimited volume</li>
+          <li>White-label checkout</li>
+          <li>Custom brand colors + logo</li>
+          <li>Priority support</li>
+          <li>Multiple API keys</li>
+          <li>Refund management</li>
+          <li>Analytics dashboard</li>
+        </ul>
+        <a href="/signup.html" class="btn-price filled">Start Growth Plan</a>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount" style="font-size:38px;">Custom</div>
+        <div class="price-desc">Volume pricing available</div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>Negotiated rates</li>
+          <li>Dedicated account manager</li>
+          <li>99.99% SLA guarantee</li>
+          <li>Custom integrations</li>
+          <li>On-premise deployment</li>
+          <li>24/7 phone support</li>
+        </ul>
+        <a href="mailto:sales@vaultpay.io" class="btn-price outline">Contact Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <div style="position:relative;">
+    <div class="eyebrow" style="justify-content:center;">Get Started</div>
+    <h2>Accept your first payment<br/><em>in under 10 minutes.</em></h2>
+    <p style="color:var(--muted);font-size:17px;margin-bottom:36px;">Free forever on Starter. No credit card required.</p>
+    <div class="hero-btns">
+      <a href="/signup.html" class="btn-hero btn-hero-primary">Create Free Account →</a>
+      <a href="/dashboard/" class="btn-hero btn-hero-outline">View Dashboard</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="/" class="nav-logo" style="margin-bottom:0;">
+        <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/></svg></div>
+        <span class="nav-logo-text">VaultPay</span>
+      </a>
+      <p>The developer-first payment gateway for modern Indian businesses. Fast, secure, and ridiculously easy to integrate.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="/docs/">API Docs</a></li><li><a href="/dashboard/">Dashboard</a></li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Developers</h4>
+      <ul><li><a href="/docs/">API Reference</a></li><li><a href="/sdk/node/vaultpay.js">Node.js SDK</a></li><li><a href="/sdk/python/vaultpay.py">Python SDK</a></li><li><a href="/sdk/php/VaultPay.php">PHP SDK</a></li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul><li><a href="/signup.html">Get Started</a></li><li><a href="mailto:support@vaultpay.io">Support</a></li><li><a href="mailto:sales@vaultpay.io">Sales</a></li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 <strong>VaultPay Technologies Pvt. Ltd.</strong> Made with ♥ in India 🇮🇳</span>
+    <span style="font-size:12px;">Build on top of VaultPay — your customers, your brand.</span>
+  </div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+},{threshold:.1,rootMargin:'0 0 -40px 0'});
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>

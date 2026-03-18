@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Create Account — VaultPay</title>
+  <link rel="stylesheet" href="/assets/css/vp-global.css"/>
+  <style>
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+    .biz-type-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .biz-type-option { border: 2px solid var(--border); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; cursor: pointer; transition: all 0.2s; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .biz-type-option:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-light); }
+    .biz-type-option.selected { border-color: var(--brand); background: var(--brand-light); color: var(--brand); }
+    .biz-type-option .icon { font-size: 24px; display: block; margin-bottom: 6px; }
+    .color-swatch { width: 32px; height: 32px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: all 0.15s; display: inline-block; }
+    .color-swatch.selected { border-color: var(--text); transform: scale(1.15); }
+    .success-screen { text-align: center; padding: 20px 0; }
+    .success-icon { width: 72px; height: 72px; background: var(--green-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 32px; animation: pop .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes pop { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
+    .key-reveal { background: #f8f8ff; border: 1.5px solid #e0e0ff; border-radius: 10px; padding: 14px 16px; margin: 12px 0; }
+    .key-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 6px; }
+    .key-value { font-family: var(--mono); font-size: 13px; color: var(--brand); word-break: break-all; }
+  </style>
+</head>
+<body>
+<div class="vp-auth-wrap" style="align-items:flex-start;padding-top:40px;">
+  <div class="vp-auth-card" style="max-width:560px;">
+
+    <!-- Logo -->
+    <div class="vp-auth-logo">
+      <div class="vp-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>
+      </div>
+      <span class="vp-nav-logo-text">VaultPay</span>
+    </div>
+
+    <!-- Steps Indicator -->
+    <div class="vp-steps" id="steps-indicator">
+      <div class="vp-step active" id="step-ind-1"><div class="vp-step-circle">1</div><div class="vp-step-label">Account</div></div>
+      <div class="vp-step" id="step-ind-2"><div class="vp-step-circle">2</div><div class="vp-step-label">Business</div></div>
+      <div class="vp-step" id="step-ind-3"><div class="vp-step-circle">3</div><div class="vp-step-label">Branding</div></div>
+      <div class="vp-step" id="step-ind-4"><div class="vp-step-circle">4</div><div class="vp-step-label">Done</div></div>
+    </div>
+
+    <div id="alert" class="vp-alert"></div>
+
+    <!-- ── STEP 1: Account ─────────────────── -->
+    <div class="step-panel active" id="panel-1">
+      <h2 class="vp-auth-title">Create your account</h2>
+      <p class="vp-auth-sub">Start accepting payments in minutes</p>
+
+      <div class="form-group">
+        <label>Full Name <span class="req">*</span></label>
+        <input type="text" id="s1-name" class="form-control" placeholder="Arjun Sharma" autocomplete="name"/>
+      </div>
+      <div class="form-group">
+        <label>Business Email <span class="req">*</span></label>
+        <input type="email" id="s1-email" class="form-control" placeholder="you@yourbusiness.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label>Phone Number <span class="req">*</span></label>
+        <input type="tel" id="s1-phone" class="form-control" placeholder="+919876543210"/>
+        <p class="form-hint">Include country code (e.g. +91 for India)</p>
+      </div>
+      <div class="form-group">
+        <label>Password <span class="req">*</span></label>
+        <input type="password" id="s1-password" class="form-control" placeholder="Min 8 chars, uppercase, number, symbol"/>
+        <p class="form-hint" id="pw-strength-hint" style="color:var(--muted);"></p>
+      </div>
+      <div class="form-group">
+        <label>Confirm Password <span class="req">*</span></label>
+        <input type="password" id="s1-password2" class="form-control" placeholder="Repeat password"/>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" onclick="goStep2()">Continue →</button>
+      <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:16px;">
+        Already have an account? <a href="/login.html" style="font-weight:700;">Sign in</a>
+      </p>
+    </div>
+
+    <!-- ── STEP 2: Business Info ───────────── -->
+    <div class="step-panel" id="panel-2">
+      <h2 class="vp-auth-title">Tell us about your business</h2>
+      <p class="vp-auth-sub">This helps us customize your payment gateway</p>
+
+      <div class="form-group">
+        <label>Business Name <span class="req">*</span></label>
+        <input type="text" id="s2-biz-name" class="form-control" placeholder="e.g. Arjun's Electronics Store"/>
+        <p class="form-hint">This name appears on your customers' checkout page</p>
+      </div>
+
+      <div class="form-group">
+        <label>Type of Business <span class="req">*</span></label>
+        <div class="biz-type-grid" id="biz-type-grid">
+          <div class="biz-type-option" data-value="ecommerce" onclick="selectBizType(this)"><span class="icon">🛒</span>E-Commerce</div>
+          <div class="biz-type-option" data-value="saas" onclick="selectBizType(this)"><span class="icon">💻</span>SaaS / Software</div>
+          <div class="biz-type-option" data-value="services" onclick="selectBizType(this)"><span class="icon">🔧</span>Services</div>
+          <div class="biz-type-option" data-value="food" onclick="selectBizType(this)"><span class="icon">🍔</span>Food & Dining</div>
+          <div class="biz-type-option" data-value="education" onclick="selectBizType(this)"><span class="icon">📚</span>Education</div>
+          <div class="biz-type-option" data-value="healthcare" onclick="selectBizType(this)"><span class="icon">🏥</span>Healthcare</div>
+          <div class="biz-type-option" data-value="retail" onclick="selectBizType(this)"><span class="icon">🏪</span>Retail</div>
+          <div class="biz-type-option" data-value="events" onclick="selectBizType(this)"><span class="icon">🎟</span>Events</div>
+          <div class="biz-type-option" data-value="other" onclick="selectBizType(this)"><span class="icon">🏢</span>Other</div>
+        </div>
+        <input type="hidden" id="s2-biz-type" value=""/>
+      </div>
+
+      <div class="form-group">
+        <label>Business Website <span class="req">*</span></label>
+        <input type="url" id="s2-website" class="form-control" placeholder="https://yoursite.com"/>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Business Country</label>
+          <select id="s2-country" class="form-control">
+            <option value="IN">🇮🇳 India</option>
+            <option value="US">🇺🇸 United States</option>
+            <option value="GB">🇬🇧 United Kingdom</option>
+            <option value="AE">🇦🇪 UAE</option>
+            <option value="SG">🇸🇬 Singapore</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>GST / Tax Number</label>
+          <input type="text" id="s2-gst" class="form-control" placeholder="Optional"/>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:4px;">
+        <button class="btn btn-outline btn-block" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary btn-block btn-lg" onclick="goStep3()">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Branding ────────────────── -->
+    <div class="step-panel" id="panel-3">
+      <h2 class="vp-auth-title">Customize your checkout</h2>
+      <p class="vp-auth-sub">Your customers will see this on the payment page</p>
+
+      <div class="form-group">
+        <label>Brand Color</label>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;" id="color-swatches">
+          <div class="color-swatch selected" data-color="#5b4fff" style="background:#5b4fff;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#e11d48" style="background:#e11d48;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#0ea5e9" style="background:#0ea5e9;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#10b981" style="background:#10b981;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#8b5cf6" style="background:#8b5cf6;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#ec4899" style="background:#ec4899;" onclick="selectColor(this)"></div>
+          <div class="color-swatch" data-color="#0f172a" style="background:#0f172a;" onclick="selectColor(this)"></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <label style="font-size:13px;color:var(--muted);">Custom:</label>
+          <input type="color" id="s3-color" value="#5b4fff" onchange="updateCustomColor(this)" style="width:40px;height:36px;padding:2px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Logo URL <span style="font-weight:400;color:var(--muted);">(optional)</span></label>
+        <input type="url" id="s3-logo" class="form-control" placeholder="https://yoursite.com/logo.png"/>
+        <p class="form-hint">Square PNG/SVG, min 100×100px. Leave blank to show initials.</p>
+      </div>
+
+      <!-- Live Preview -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;font-weight:700;color:var(--text-soft);display:block;margin-bottom:10px;">Checkout Preview</label>
+        <div id="checkout-preview" style="border:1.5px solid var(--border);border-radius:12px;overflow:hidden;background:#f8f7ff;">
+          <div id="preview-header" style="background:#5b4fff;padding:16px 20px;display:flex;align-items:center;gap:12px;">
+            <div id="preview-logo" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;">A</div>
+            <div>
+              <div id="preview-name" style="font-size:15px;font-weight:800;color:white;">Your Business</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.7);">Secure checkout</div>
+            </div>
+          </div>
+          <div style="padding:14px 20px;text-align:center;color:#374151;font-size:14px;">
+            <div style="font-size:24px;font-weight:900;letter-spacing:-1px;color:#111;">₹499.00</div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;">Scan QR to pay</div>
+          </div>
+          <div style="padding:4px 20px 12px;text-align:center;border-top:1px solid #e5e7eb;">
+            <span style="font-size:11px;color:#9ca3af;">Powered by <strong style="color:#5b4fff;" id="preview-brand">VaultPay</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline btn-block" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-primary btn-block btn-lg" id="submit-btn" onclick="submitSignup()">Create Account →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: Done ────────────────────── -->
+    <div class="step-panel" id="panel-4">
+      <div class="success-screen">
+        <div class="success-icon">🎉</div>
+        <h2 style="font-size:24px;margin-bottom:8px;">You're all set!</h2>
+        <p style="color:var(--muted);margin-bottom:24px;">Your VaultPay account is ready. Save your API keys below — the live key won't be shown again.</p>
+
+        <div style="text-align:left;">
+          <div class="key-reveal">
+            <div class="key-label">Test API Key (for development)</div>
+            <div class="key-value" id="show-test-key">—</div>
+            <button class="btn btn-sm btn-outline" style="margin-top:8px;" onclick="UI.copy(document.getElementById('show-test-key').textContent,'Test key copied!')">Copy Test Key</button>
+          </div>
+          <div class="key-reveal">
+            <div class="key-label">Live API Key ⚠ Save this now — shown only once</div>
+            <div class="key-value" id="show-live-key">—</div>
+            <button class="btn btn-sm btn-outline" style="margin-top:8px;" onclick="UI.copy(document.getElementById('show-live-key').textContent,'Live key copied!')">Copy Live Key</button>
+          </div>
+        </div>
+
+        <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:14px 16px;margin:16px 0;text-align:left;font-size:13px;color:#92400e;">
+          ⚠ <strong>Important:</strong> Store your live API key in a secure place (password manager or secret manager). It cannot be recovered if lost — only regenerated.
+        </div>
+
+        <a href="/dashboard/" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
+          Go to Dashboard →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/assets/js/vp-utils.js"></script>
+<script>
+let selectedBizType = '';
+let selectedColor   = '#5b4fff';
+
+// ── Step Navigation ──────────────────────────────────────────
+function goStep(n) {
+  document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i === n-1));
+  document.querySelectorAll('[id^="step-ind-"]').forEach((el,i) => {
+    const idx = i+1;
+    el.classList.remove('active','done');
+    if (idx < n)  el.classList.add('done');
+    if (idx === n) el.classList.add('active');
+    if (idx <= n) el.querySelector('.vp-step-circle').textContent = idx < n ? '✓' : idx;
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function goStep2() {
+  const name  = document.getElementById('s1-name').value.trim();
+  const email = document.getElementById('s1-email').value.trim();
+  const phone = document.getElementById('s1-phone').value.trim();
+  const pw    = document.getElementById('s1-password').value;
+  const pw2   = document.getElementById('s1-password2').value;
+  const alert = document.getElementById('alert');
+
+  if (!name || !email || !phone || !pw) return UI.alert(alert,'error','All fields are required');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return UI.alert(alert,'error','Enter a valid email address');
+  if (!/^\+?[1-9]\d{9,14}$/.test(phone.replace(/\s/g,''))) return UI.alert(alert,'error','Enter a valid phone with country code');
+  if (pw.length < 8) return UI.alert(alert,'error','Password must be at least 8 characters');
+  if (!/(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&&#])/.test(pw)) return UI.alert(alert,'error','Password needs uppercase, number, and special character');
+  if (pw !== pw2) return UI.alert(alert,'error','Passwords do not match');
+
+  UI.clearAlert(alert);
+  goStep(2);
+}
+
+function goStep3() {
+  const name    = document.getElementById('s2-biz-name').value.trim();
+  const website = document.getElementById('s2-website').value.trim();
+  const alert   = document.getElementById('alert');
+
+  if (!name) return UI.alert(alert,'error','Business name is required');
+  if (!selectedBizType) return UI.alert(alert,'error','Please select your business type');
+  if (!website) return UI.alert(alert,'error','Business website is required');
+
+  UI.clearAlert(alert);
+  updatePreview();
+  goStep(3);
+}
+
+// ── Business Type Selection ──────────────────────────────────
+function selectBizType(el) {
+  document.querySelectorAll('.biz-type-option').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedBizType = el.dataset.value;
+  document.getElementById('s2-biz-type').value = selectedBizType;
+}
+
+// ── Color Selection ──────────────────────────────────────────
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedColor = el.dataset.color;
+  document.getElementById('s3-color').value = selectedColor;
+  updatePreview();
+}
+
+function updateCustomColor(inp) {
+  selectedColor = inp.value;
+  document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
+  updatePreview();
+}
+
+// ── Live Preview ─────────────────────────────────────────────
+function updatePreview() {
+  const name = document.getElementById('s2-biz-name')?.value.trim() || 'Your Business';
+  document.getElementById('preview-header').style.background = selectedColor;
+  document.getElementById('preview-name').textContent = name;
+  document.getElementById('preview-logo').textContent = name.charAt(0).toUpperCase();
+}
+
+document.getElementById('s2-biz-name')?.addEventListener('input', updatePreview);
+document.getElementById('s3-color')?.addEventListener('input', e => {
+  selectedColor = e.target.value;
+  updatePreview();
+});
+
+// ── Password Strength ────────────────────────────────────────
+document.getElementById('s1-password')?.addEventListener('input', function() {
+  const pw = this.value;
+  const hint = document.getElementById('pw-strength-hint');
+  if (!pw) { hint.textContent=''; return; }
+  let score = 0;
+  if (pw.length >= 8)  score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/\d/.test(pw))    score++;
+  if (/[@$!%*?&&#]/.test(pw)) score++;
+  const levels = [
+    { text:'Too short',    color:'var(--red)' },
+    { text:'Weak',         color:'var(--red)' },
+    { text:'Fair',         color:'var(--yellow)' },
+    { text:'Good',         color:'var(--brand)' },
+    { text:'Strong ✓',     color:'var(--green)' },
+  ];
+  const level = levels[score];
+  hint.textContent = level.text;
+  hint.style.color = level.color;
+});
+
+// ── Submit ───────────────────────────────────────────────────
+async function submitSignup() {
+  const alert = document.getElementById('alert');
+  const btn   = document.getElementById('submit-btn');
+
+  const logoUrl = document.getElementById('s3-logo').value.trim();
+
+  const payload = {
+    name:          document.getElementById('s1-name').value.trim(),
+    email:         document.getElementById('s1-email').value.trim().toLowerCase(),
+    phone:         document.getElementById('s1-phone').value.trim(),
+    password:      document.getElementById('s1-password').value,
+    business_name: document.getElementById('s2-biz-name').value.trim(),
+    business_type: selectedBizType,
+    website:       document.getElementById('s2-website').value.trim(),
+    country:       document.getElementById('s2-country').value,
+    gst_number:    document.getElementById('s2-gst').value.trim(),
+    brand_color:   selectedColor,
+    logo_url:      logoUrl || '',
+  };
+
+  UI.clearAlert(alert);
+  UI.setLoading(btn, true, 'Creating account...');
+
+  try {
+    const data = await VP.post('/auth/register', payload);
+
+    // Store auth
+    VP.token    = data.token;
+    VP.merchant = data.merchant;
+    VP.testKey  = data.api_keys.test;
+    localStorage.setItem('vp_live_key', data.api_keys.live);
+    localStorage.setItem('vp_webhook_secret', data.webhook_secret || '');
+
+    // Show keys on step 4
+    document.getElementById('show-test-key').textContent = data.api_keys.test;
+    document.getElementById('show-live-key').textContent = data.api_keys.live;
+
+    goStep(4);
+  } catch (err) {
+    UI.alert(alert, 'error', err.message || 'Registration failed');
+    UI.setLoading(btn, false);
+  }
+}
+
+// Redirect if already logged in
+if (VP.isLoggedIn) window.location.href = '/dashboard/';
+</script>
+</body>
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Pay Securely</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --brand:#5b4fff;--brand-dark:#4338ca;
+      --font:'Plus Jakarta Sans',system-ui,sans-serif;
+      --mono:'JetBrains Mono',monospace;
+    }
+    body{font-family:var(--font);background:#f4f4f5;min-height:100vh;overflow-x:hidden;}
+
+    /* ── Loading ─────────────── */
+    #loading{position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:100;transition:opacity .4s;}
+    #loading.done{opacity:0;pointer-events:none;}
+    .spinner{width:40px;height:40px;border:3px solid rgba(91,79,255,0.15);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ── Split Layout ────────── */
+    .checkout{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+
+    /* ── Left Panel ──────────── */
+    .left{
+      background:var(--brand);
+      background-image:radial-gradient(ellipse at 30% 60%,rgba(255,255,255,.1),transparent 60%);
+      padding:48px 44px;display:flex;flex-direction:column;color:white;position:relative;overflow:hidden;
+    }
+    .left::before{content:'';position:absolute;width:300px;height:300px;background:rgba(255,255,255,.06);border-radius:50%;top:-100px;right:-80px;}
+    .left::after{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,.04);border-radius:50%;bottom:30px;left:-60px;}
+    .biz-header{display:flex;align-items:center;gap:14px;margin-bottom:44px;position:relative;z-index:1;}
+    .biz-logo{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;overflow:hidden;flex-shrink:0;}
+    .biz-logo img{width:100%;height:100%;object-fit:cover;}
+    .biz-name{font-size:18px;font-weight:800;}
+    .biz-type{font-size:13px;opacity:.7;margin-top:2px;}
+    .amount-block{flex:1;position:relative;z-index:1;}
+    .amount-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;opacity:.65;margin-bottom:10px;}
+    .amount-val{font-size:52px;font-weight:900;letter-spacing:-3px;line-height:1;margin-bottom:6px;}
+    .amount-desc{font-size:15px;opacity:.75;margin-bottom:32px;line-height:1.5;}
+    .order-info{background:rgba(255,255,255,.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:18px 20px;margin-bottom:auto;}
+    .oi-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;}
+    .oi-row:not(:last-child){border-bottom:1px solid rgba(255,255,255,.1);}
+    .oi-label{opacity:.65;}
+    .oi-val{font-family:var(--mono);font-size:12px;font-weight:500;}
+    .sec-badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:24px;}
+    .sec-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:7px;font-size:11px;font-weight:600;}
+
+    /* ── Right Panel ─────────── */
+    .right{background:white;padding:40px 40px;display:flex;flex-direction:column;overflow-y:auto;}
+    .powered-row{display:flex;justify-content:flex-end;margin-bottom:24px;}
+    .powered{display:flex;align-items:center;gap:8px;text-decoration:none;background:#f9f9ff;border:1px solid #e0e0ff;border-radius:9px;padding:5px 12px;transition:all .2s;}
+    .powered:hover{background:#f0f0ff;}
+    .powered-icon{width:20px;height:20px;background:var(--brand);border-radius:5px;display:flex;align-items:center;justify-content:center;}
+    .powered-icon svg{width:11px;height:11px;fill:white;}
+    .powered span{font-size:12px;color:#6b7280;font-weight:600;}
+    .powered strong{color:var(--brand);}
+
+    /* ── Tabs ─────────────────── */
+    .tabs{display:flex;background:#f4f4f5;border-radius:10px;padding:4px;margin-bottom:24px;}
+    .tab{flex:1;padding:9px;border:none;border-radius:7px;font-family:var(--font);font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;background:none;}
+    .tab.active{background:white;color:var(--brand);box-shadow:0 1px 8px rgba(0,0,0,.08);}
+
+    /* ── QR Panel ─────────────── */
+    #tab-qr{display:flex;flex-direction:column;align-items:center;gap:18px;}
+    .qr-wrap{border:2px solid #e5e7eb;border-radius:18px;padding:14px;background:white;box-shadow:0 4px 20px rgba(0,0,0,.06);position:relative;transition:transform .3s;}
+    .qr-wrap:hover{transform:scale(1.02);}
+    .qr-wrap img{width:200px;height:200px;border-radius:10px;display:block;}
+    .qr-tag{position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);background:var(--brand);color:white;font-size:11px;font-weight:800;padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.5px;}
+    .app-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+    .app-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1.5px solid #e5e7eb;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+    .app-pill:hover{border-color:var(--brand);color:var(--brand);background:#f0f0ff;}
+    .qr-help{text-align:center;}
+    .qr-help h3{font-size:16px;font-weight:800;margin-bottom:6px;}
+    .qr-help p{font-size:13px;color:#6b7280;line-height:1.6;}
+    .timer-bar{width:100%;background:#f3f4f6;border-radius:20px;height:5px;overflow:hidden;}
+    .timer-fill{height:100%;background:linear-gradient(90deg,var(--brand),#8b5cf6);border-radius:20px;transition:width 1s linear;}
+    .timer-row{display:flex;justify-content:space-between;font-size:12px;color:#9ca3af;margin-top:4px;}
+    .timer-countdown{color:var(--brand);font-weight:700;font-family:var(--mono);}
+    .divider{display:flex;align-items:center;gap:12px;color:#9ca3af;font-size:12px;width:100%;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e5e7eb;}
+
+    /* ── SMS Panel ─────────────── */
+    #tab-sms{display:none;flex-direction:column;gap:14px;}
+    #tab-sms.active{display:flex;}
+    .sms-label{font-size:13px;font-weight:700;color:#374151;margin-bottom:6px;display:block;}
+    .sms-textarea,.sms-input{width:100%;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;font-family:var(--mono);font-size:13px;resize:vertical;outline:none;transition:border .2s;background:#fafafa;}
+    .sms-textarea{min-height:90px;}
+    .sms-textarea:focus,.sms-input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(91,79,255,.1);background:white;}
+    .sms-result{border-radius:10px;padding:14px 16px;display:none;margin-top:4px;}
+    .sms-result.show{display:block;}
+    .sms-kv{display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(0,0,0,.05);}
+    .sms-kv:last-child{border:none;}
+    .sms-kv .k{color:#6b7280;}
+    .sms-kv .v{font-family:var(--mono);font-size:12px;font-weight:600;}
+
+    /* ── Buttons ─────────────── */
+    .btn{width:100%;padding:14px;border:none;border-radius:12px;font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .btn-brand{background:var(--brand);color:white;box-shadow:0 4px 18px rgba(91,79,255,.35);}
+    .btn-brand:hover:not(:disabled){background:var(--brand-dark);transform:translateY(-2px);box-shadow:0 8px 24px rgba(91,79,255,.45);}
+    .btn-ghost-v{background:transparent;border:1.5px solid #e5e7eb;color:#6b7280;}
+    .btn-ghost-v:hover{border-color:var(--brand);color:var(--brand);}
+    .btn:disabled{opacity:.6;cursor:not-allowed;}
+
+    /* ── Success Screen ──────── */
+    #success-screen{display:none;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:20px 0;}
+    #success-screen.show{display:flex;}
+    .success-check{width:72px;height:72px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:pop .5s cubic-bezier(.34,1.56,.64,1);}
+    .success-check svg{width:34px;height:34px;stroke:#065f46;fill:none;stroke-width:3;}
+    @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+    .receipt-mini{width:100%;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:12px;padding:16px 20px;}
+    .receipt-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px solid #f0f0f0;}
+    .receipt-row:last-child{border:none;}
+    .rl{color:#6b7280;}.rv{font-weight:700;font-family:var(--mono);font-size:12px;}
+
+    /* ── Error Screen ────────── */
+    #error-screen{display:none;flex-direction:column;align-items:center;text-align:center;padding:40px 20px;gap:12px;}
+    #error-screen.show{display:flex;}
+
+    /* ── Responsive ──────────── */
+    @media(max-width:768px){
+      .checkout{grid-template-columns:1fr;}
+      .left{padding:32px 24px;}
+      .amount-val{font-size:40px;}
+      .right{padding:28px 20px;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <span style="font-family:var(--font);font-size:14px;color:#6b7280;">Loading secure checkout...</span>
+</div>
+
+<div class="checkout" id="checkout-wrap" style="opacity:0;transition:opacity .4s;">
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="biz-header">
+      <div class="biz-logo" id="biz-logo"><span id="biz-initial">?</span></div>
+      <div>
+        <div class="biz-name" id="biz-name">Loading...</div>
+        <div class="biz-type" id="biz-type">Secure Payment</div>
+      </div>
+    </div>
+
+    <div class="amount-block">
+      <div class="amount-label">Amount Due</div>
+      <div class="amount-val" id="amount-val">—</div>
+      <div class="amount-desc" id="amount-desc">Payment Request</div>
+
+      <div class="order-info">
+        <div class="oi-row"><span class="oi-label">Payment ID</span><span class="oi-val" id="left-pid">—</span></div>
+        <div class="oi-row"><span class="oi-label">Customer</span><span class="oi-val" id="left-customer">—</span></div>
+        <div class="oi-row"><span class="oi-label">Currency</span><span class="oi-val" id="left-currency">—</span></div>
+      </div>
+
+      <div class="sec-badges">
+        <div class="sec-badge">🔒 256-bit TLS</div>
+        <div class="sec-badge">✓ PCI Compliant</div>
+        <div class="sec-badge">⚡ Instant Confirmation</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="powered-row">
+      <a href="/" class="powered" target="_blank">
+        <div class="powered-icon"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/></svg></div>
+        <span>Powered by <strong>VaultPay</strong></span>
+      </a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="pay-tabs">
+      <button class="tab active" onclick="switchTab('qr',this)">📱 Scan QR</button>
+      <button class="tab" onclick="switchTab('sms',this)">💬 Confirm SMS</button>
+    </div>
+
+    <!-- QR Tab -->
+    <div id="tab-qr">
+      <div class="qr-wrap">
+        <img id="qr-img" src="" alt="Payment QR Code"/>
+        <div class="qr-tag">SCAN TO PAY</div>
+      </div>
+
+      <div class="app-pills">
+        <div class="app-pill"><span style="background:#00b9f1;width:8px;height:8px;border-radius:50%;"></span>PhonePe</div>
+        <div class="app-pill"><span style="background:#4285f4;width:8px;height:8px;border-radius:50%;"></span>GPay</div>
+        <div class="app-pill"><span style="background:#00baf2;width:8px;height:8px;border-radius:50%;"></span>Paytm</div>
+        <div class="app-pill"><span style="background:#002970;width:8px;height:8px;border-radius:50%;"></span>BHIM</div>
+      </div>
+
+      <div class="qr-help">
+        <h3>Open any UPI app and scan</h3>
+        <p>Payment will confirm automatically once you pay</p>
+      </div>
+
+      <div style="width:100%;">
+        <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%;"></div></div>
+        <div class="timer-row">
+          <span>Link expires in</span>
+          <span class="timer-countdown" id="timer-text">—</span>
+        </div>
+      </div>
+
+      <div class="divider">or already paid</div>
+
+      <button class="btn btn-brand" onclick="switchTab('sms',document.querySelectorAll('.tab')[1])">
+        I've Paid — Confirm via SMS
+      </button>
+    </div>
+
+    <!-- SMS Tab -->
+    <div id="tab-sms">
+      <label class="sms-label">Paste your bank SMS below</label>
+      <textarea id="sms-input" class="sms-textarea" placeholder="Your a/c XXXX1234 is credited INR 499.00 by UPI. Ref No: 312456789012. -HDFC Bank"></textarea>
+
+      <div id="sms-result" class="sms-result">
+        <h4 id="sms-result-title" style="font-size:14px;font-weight:800;margin-bottom:8px;"></h4>
+        <div id="sms-result-rows"></div>
+      </div>
+
+      <button class="btn btn-brand" onclick="verifySMS()" id="sms-btn">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Verify Payment
+      </button>
+
+      <button class="btn btn-ghost-v" onclick="switchTab('qr',document.querySelectorAll('.tab')[0])">
+        ← Back to QR
+      </button>
+    </div>
+
+    <!-- Success -->
+    <div id="success-screen">
+      <div class="success-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <h2 style="font-size:24px;font-weight:900;">Payment Confirmed! 🎉</h2>
+      <p style="font-size:14px;color:#6b7280;max-width:280px;line-height:1.6;">A receipt has been emailed to you. Thank you!</p>
+      <div class="receipt-mini">
+        <div class="receipt-row"><span class="rl">Amount</span><span class="rv" id="s-amount">—</span></div>
+        <div class="receipt-row"><span class="rl">Payment ID</span><span class="rv" id="s-pid" style="font-size:11px;">—</span></div>
+        <div class="receipt-row"><span class="rl">Time</span><span class="rv" id="s-time">—</span></div>
+      </div>
+      <button class="btn btn-brand" id="continue-btn" style="display:none;">Continue →</button>
+    </div>
+
+    <!-- Error -->
+    <div id="error-screen">
+      <div style="font-size:48px;">❌</div>
+      <h2 style="font-size:20px;font-weight:800;" id="error-title">Payment Not Found</h2>
+      <p style="font-size:14px;color:#6b7280;" id="error-msg">This link may be invalid or expired.</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script>
+const API = window.VAULTPAY_API_URL || '';
+let paymentData = null;
+let timerInterval = null;
+let pollInterval  = null;
+
+// ── Bootstrap ──────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(location.search);
+  const pid = params.get('id');
+
+  if (!pid) { showError('Invalid Link', 'No payment ID found in URL.'); return; }
+
+  try {
+    const res  = await fetch(`${API}/payments/checkout/${pid}`);
+    const json = await res.json();
+
+    if (!json.success) {
+      showError(json.error?.code === 'PAYMENT_EXPIRED' ? 'Link Expired' : 'Payment Not Found', json.error?.message || 'This payment link is no longer valid.');
+      return;
+    }
+
+    paymentData = json.data;
+    renderPayment(paymentData);
+
+    document.getElementById('loading').classList.add('done');
+    document.getElementById('checkout-wrap').style.opacity = '1';
+
+    startTimer();
+    pollInterval = setInterval(checkStatus, 6000);
+
+  } catch (err) {
+    showError('Connection Error', 'Could not load payment details. Please try again.');
+    console.error(err);
+  }
+});
+
+function renderPayment(p) {
+  const color = p.merchant.brand_color || '#5b4fff';
+  document.documentElement.style.setProperty('--brand', color);
+  document.documentElement.style.setProperty('--brand-dark', shadeColor(color, -20));
+
+  // Left panel
+  document.getElementById('biz-name').textContent    = p.merchant.name;
+  document.getElementById('biz-initial').textContent = p.merchant.name.charAt(0).toUpperCase();
+  document.getElementById('amount-val').textContent  = p.amount_formatted;
+  document.getElementById('amount-desc').textContent = p.description || 'Payment Request';
+  document.getElementById('left-pid').textContent    = p.payment_id.substring(0,20) + '...';
+  document.getElementById('left-customer').textContent = p.customer?.name || '—';
+  document.getElementById('left-currency').textContent = `${p.currency} (${p.currency_symbol})`;
+
+  // Logo
+  if (p.merchant.logo_url) {
+    document.getElementById('biz-logo').innerHTML = `<img src="${p.merchant.logo_url}" alt="logo" onerror="this.parentElement.innerHTML='<span>${p.merchant.name.charAt(0).toUpperCase()}</span>'" />`;
+  }
+
+  // QR
+  document.getElementById('qr-img').src = p.qr_code;
+
+  // Success screen prep
+  document.getElementById('s-amount').textContent = p.amount_formatted;
+  document.getElementById('s-pid').textContent    = p.payment_id;
+}
+
+// ── Timer ──────────────────────────────────────────────────────────────────
+function startTimer() {
+  const expiresAt = new Date(paymentData.expires_at);
+  const totalMs = expiresAt - new Date(paymentData.created_at || Date.now() - 3600000);
+
+  function tick() {
+    const diff = expiresAt - Date.now();
+    if (diff <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timer-text').textContent = 'EXPIRED';
+      document.getElementById('timer-fill').style.width = '0%';
+      document.getElementById('timer-fill').style.background = '#ef4444';
+      return;
+    }
+    const m = Math.floor(diff / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('timer-text').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    const pct = Math.max(0, (diff / (totalMs||3600000)) * 100);
+    document.getElementById('timer-fill').style.width = pct + '%';
+    if (pct < 20) document.getElementById('timer-fill').style.background = '#ef4444';
+  }
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+// ── Tab Switch ─────────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('tab-qr').style.display  = tab === 'qr'  ? 'flex' : 'none';
+  document.getElementById('tab-sms').style.display = tab === 'sms' ? 'flex' : 'none';
+}
+
+// ── SMS Verify ─────────────────────────────────────────────────────────────
+async function verifySMS() {
+  const sms = document.getElementById('sms-input').value.trim();
+  const btn = document.getElementById('sms-btn');
+  if (!sms) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+
+  try {
+    const res  = await fetch(`${API}/sms/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sms, payment_id: paymentData?.payment_id }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error?.message);
+
+    const { parsed, action_taken } = json.data;
+    const resultEl = document.getElementById('sms-result');
+    const isOk = ['captured','auto_captured','already_processed'].includes(action_taken);
+
+    resultEl.style.display = 'block';
+    resultEl.style.background = isOk ? '#d1fae5' : parsed.amount ? '#fef3c7' : '#fee2e2';
+    resultEl.style.border = `1px solid ${isOk ? '#a7f3d0' : parsed.amount ? '#fde68a' : '#fecaca'}`;
+
+    document.getElementById('sms-result-title').textContent = isOk ? '✅ Payment Confirmed!' : parsed.amount ? '⚠ Amount Detected' : '❌ No Payment Found';
+    document.getElementById('sms-result-rows').innerHTML = [
+      ['Amount',     parsed.amount ? `₹${parsed.amount}` : 'Not found'],
+      ['Txn Ref',    parsed.transaction_id || '—'],
+      ['Bank',       parsed.bank || 'Unknown'],
+      ['Action',     action_taken || 'none'],
+    ].map(([k,v]) => `<div class="sms-kv"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+
+    if (isOk) setTimeout(showSuccess, 1000);
+
+  } catch (err) {
+    const r = document.getElementById('sms-result');
+    r.style.display = 'block';
+    r.style.background = '#fee2e2';
+    r.style.border = '1px solid #fecaca';
+    document.getElementById('sms-result-title').textContent = '❌ Verification Failed';
+    document.getElementById('sms-result-rows').innerHTML = `<div class="sms-kv"><span class="k">Error</span><span class="v">${err.message}</span></div>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Verify Payment';
+}
+
+// ── Poll Status ────────────────────────────────────────────────────────────
+async function checkStatus() {
+  if (!paymentData?.payment_id) return;
+  try {
+    const res  = await fetch(`${API}/payments/checkout/${paymentData.payment_id}`);
+    const json = await res.json();
+    if (json.success && json.data.status === 'captured') {
+      clearInterval(pollInterval);
+      showSuccess();
+    }
+  } catch (_) {}
+}
+
+// ── Show Success ───────────────────────────────────────────────────────────
+function showSuccess() {
+  clearInterval(timerInterval);
+  clearInterval(pollInterval);
+
+  document.getElementById('pay-tabs').style.display  = 'none';
+  document.getElementById('tab-qr').style.display    = 'none';
+  document.getElementById('tab-sms').style.display   = 'none';
+  document.getElementById('success-screen').classList.add('show');
+
+  document.getElementById('s-time').textContent = new Date().toLocaleString('en-IN',{dateStyle:'medium',timeStyle:'short'});
+
+  if (paymentData?.redirect_url) {
+    const btn = document.getElementById('continue-btn');
+    btn.style.display = 'flex';
+    btn.onclick = () => window.location.href = paymentData.redirect_url;
+    setTimeout(() => window.location.href = paymentData.redirect_url, 5000);
+  }
+}
+
+function showError(title, msg) {
+  document.getElementById('loading').classList.add('done');
+  document.getElementById('checkout-wrap').style.opacity = '1';
+  document.querySelectorAll('.left,.tabs,#tab-qr,#tab-sms').forEach(el => el.style.display = 'none');
+  document.getElementById('error-title').textContent = title;
+  document.getElementById('error-msg').textContent   = msg;
+  document.getElementById('error-screen').classList.add('show');
+  document.querySelector('.right').style.justifyContent = 'center';
+}
+
+function shadeColor(color, pct) {
+  const num = parseInt(color.replace('#',''), 16);
+  const amt = Math.round(2.55 * pct);
+  const R = Math.min(255,Math.max(0,(num>>16)+amt));
+  const G = Math.min(255,Math.max(0,(num>>8&0x00FF)+amt));
+  const B = Math.min(255,Math.max(0,(num&0x0000FF)+amt));
+  return '#'+(0x1000000+R*0x10000+G*0x100+B).toString(16).slice(1);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Dashboard — VaultPay</title>
+  <link rel="stylesheet" href="/assets/css/vp-global.css"/>
+</head>
+<body>
+<div class="vp-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="vp-sidebar">
+    <div class="vp-sidebar-logo">
+      <div class="vp-sidebar-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/></svg></div>
+      <span class="vp-sidebar-logo-text">VaultPay</span>
+    </div>
+
+    <div class="vp-sidebar-section">Main</div>
+    <a class="vp-sidebar-link active" data-page="overview" href="#overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Overview
+    </a>
+    <a class="vp-sidebar-link" data-page="payments" href="#payments">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Payments
+    </a>
+    <a class="vp-sidebar-link" data-page="create" href="#create">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      New Payment
+    </a>
+    <a class="vp-sidebar-link" data-page="sms" href="#sms">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      SMS Verify
+    </a>
+    <a class="vp-sidebar-link" data-page="qr" href="#qr">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><path d="M14 14h3v3m0 4h3m-3-3h3"/></svg>
+      QR Generator
+    </a>
+
+    <div class="vp-sidebar-section">Account</div>
+    <a class="vp-sidebar-link" data-page="settings" href="#settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+      Settings
+    </a>
+    <a class="vp-sidebar-link" data-page="apikeys" href="#apikeys">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      API Keys
+    </a>
+
+    <div class="vp-sidebar-spacer"></div>
+    <div class="vp-sidebar-merchant">
+      <div class="vp-sidebar-merchant-name" id="sb-biz-name">Loading...</div>
+      <div class="vp-sidebar-merchant-email" id="sb-email">...</div>
+      <button onclick="VP.logout()" style="width:100%;margin-top:8px;padding:7px;background:transparent;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;font-family:var(--font);">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="vp-main">
+
+    <!-- ── OVERVIEW ─────────────────────────────────── -->
+    <div class="vp-page active" id="page-overview">
+      <div class="vp-page-header" style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <h1 id="overview-greeting">Dashboard</h1>
+          <p id="overview-sub">Welcome back</p>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <span class="vp-badge vp-badge-test" id="mode-badge">TEST MODE</span>
+          <button class="btn btn-primary btn-sm" onclick="showPage('create')">+ New Payment</button>
+        </div>
+      </div>
+
+      <div class="vp-stats" id="stats-grid">
+        <div class="vp-stat"><div class="vp-stat-label">Total Volume</div><div class="vp-stat-value" id="st-volume">₹0</div><div class="vp-stat-sub">Captured payments</div></div>
+        <div class="vp-stat"><div class="vp-stat-label">Successful</div><div class="vp-stat-value" id="st-captured">0</div><div class="vp-stat-sub">Payments captured</div></div>
+        <div class="vp-stat"><div class="vp-stat-label">Pending</div><div class="vp-stat-value" id="st-pending">0</div><div class="vp-stat-sub">Awaiting payment</div></div>
+        <div class="vp-stat"><div class="vp-stat-label">Total Orders</div><div class="vp-stat-value" id="st-total">0</div><div class="vp-stat-sub">All time</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Recent Payments</span>
+          <button class="btn btn-outline btn-sm" onclick="showPage('payments')">View All</button>
+        </div>
+        <div class="table-wrap" id="recent-table"><div style="padding:32px;text-align:center;color:var(--muted);">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ── PAYMENTS ──────────────────────────────────── -->
+    <div class="vp-page" id="page-payments">
+      <div class="vp-page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div><h1>Payments</h1><p>All your payment orders</p></div>
+        <button class="btn btn-outline btn-sm" onclick="loadPayments()">↻ Refresh</button>
+      </div>
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <input id="pay-search" class="form-control" style="max-width:280px;" placeholder="Search ID, order, customer..." oninput="filterPaymentsTable()"/>
+        <select id="pay-filter" class="form-control" style="max-width:160px;" onchange="filterPaymentsTable()">
+          <option value="">All Status</option>
+          <option value="captured">Captured</option>
+          <option value="created">Pending</option>
+          <option value="failed">Failed</option>
+          <option value="refunded">Refunded</option>
+        </select>
+      </div>
+      <div class="card">
+        <div class="table-wrap" id="payments-table"><div style="padding:32px;text-align:center;color:var(--muted);">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ── CREATE PAYMENT ────────────────────────────── -->
+    <div class="vp-page" id="page-create">
+      <div class="vp-page-header"><h1>New Payment</h1><p>Generate a checkout link with QR code</p></div>
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;">
+        <div class="card">
+          <div class="card-body">
+            <div id="create-alert" class="vp-alert"></div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Order ID <span class="req">*</span></label>
+                <input type="text" id="c-order" class="form-control" placeholder="ORD-001"/>
+                <p class="form-hint">Your internal order reference</p>
+              </div>
+              <div class="form-group">
+                <label>Amount (in ₹) <span class="req">*</span></label>
+                <input type="number" id="c-amount" class="form-control" placeholder="499" min="1" step="0.01"/>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Currency</label>
+                <select id="c-currency" class="form-control">
+                  <option value="INR">₹ INR</option>
+                  <option value="USD">$ USD</option>
+                  <option value="EUR">€ EUR</option>
+                  <option value="GBP">£ GBP</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Expires In</label>
+                <select id="c-expires" class="form-control">
+                  <option value="900">15 minutes</option>
+                  <option value="1800">30 minutes</option>
+                  <option value="3600" selected>1 hour</option>
+                  <option value="86400">24 hours</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Customer Name <span class="req">*</span></label>
+                <input type="text" id="c-cname" class="form-control" placeholder="Customer Name"/>
+              </div>
+              <div class="form-group">
+                <label>Customer Email <span class="req">*</span></label>
+                <input type="email" id="c-cemail" class="form-control" placeholder="customer@email.com"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Customer Phone <span class="req">*</span></label>
+              <input type="tel" id="c-cphone" class="form-control" placeholder="+919876543210"/>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input type="text" id="c-desc" class="form-control" placeholder="What is this payment for?"/>
+            </div>
+            <div class="form-group">
+              <label>Redirect URL (after payment)</label>
+              <input type="url" id="c-redirect" class="form-control" placeholder="https://yoursite.com/thank-you"/>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg" id="create-btn" onclick="createPayment()">
+              Generate Payment Link + QR
+            </button>
+          </div>
+        </div>
+
+        <!-- QR Output -->
+        <div>
+          <div class="card" id="qr-output-card" style="display:none;">
+            <div class="card-header"><span class="card-title">Payment Created</span></div>
+            <div class="card-body" style="text-align:center;">
+              <div style="background:white;border:1.5px solid var(--border);border-radius:12px;padding:16px;display:inline-block;margin-bottom:14px;">
+                <img id="qr-output-img" src="" alt="QR Code" style="width:180px;height:180px;display:block;border-radius:6px;"/>
+              </div>
+              <div class="vp-key-box" style="margin-bottom:12px;">
+                <span class="vp-key-text" id="qr-link-url" style="font-size:12px;"></span>
+                <button class="vp-key-copy" onclick="UI.copy(document.getElementById('qr-link-url').textContent,'Link copied!')">Copy</button>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline btn-sm" style="flex:1;" onclick="UI.copy(document.getElementById('qr-link-url').textContent,'Link copied!')">📋 Copy Link</button>
+                <button class="btn btn-primary btn-sm" style="flex:1;" id="open-checkout-btn">🔗 Open</button>
+              </div>
+            </div>
+          </div>
+          <div class="card" id="qr-placeholder-card">
+            <div class="card-body" style="text-align:center;padding:40px;color:var(--muted);">
+              <div style="font-size:36px;margin-bottom:12px;">📱</div>
+              <p style="font-size:14px;">Fill the form and generate a payment link. A QR code will appear here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SMS VERIFY ────────────────────────────────── -->
+    <div class="vp-page" id="page-sms">
+      <div class="vp-page-header"><h1>SMS Verification</h1><p>Confirm payments via bank SMS</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="card">
+          <div class="card-body">
+            <div id="sms-alert" class="vp-alert"></div>
+            <div class="form-group">
+              <label>Bank SMS Text <span class="req">*</span></label>
+              <textarea id="sms-input" class="form-control" rows="5" placeholder="Paste the SMS from your bank here...&#10;&#10;Example: Your a/c XXXX1234 credited INR 499.00 by UPI. Ref: 312456789012. -HDFC Bank"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Payment ID <span style="color:var(--muted);font-weight:400;">(optional — to auto-confirm)</span></label>
+              <input type="text" id="sms-pid" class="form-control" placeholder="pay_abc123..."/>
+            </div>
+            <button class="btn btn-primary btn-block" id="sms-btn" onclick="parseSMS()">Parse & Verify SMS</button>
+
+            <div id="sms-result-card" style="display:none;margin-top:16px;border-radius:10px;padding:16px;">
+              <h4 id="sms-result-title" style="font-size:14px;font-weight:800;margin-bottom:10px;"></h4>
+              <div id="sms-result-rows" style="display:grid;gap:6px;font-size:13px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-body">
+            <h4 style="font-weight:800;margin-bottom:12px;">Sample SMS Formats</h4>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">Click any sample to test:</p>
+            <div id="sms-samples" style="display:flex;flex-direction:column;gap:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QR GENERATOR ──────────────────────────────── -->
+    <div class="vp-page" id="page-qr">
+      <div class="vp-page-header"><h1>QR Generator</h1><p>Generate custom QR codes</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <div class="card">
+          <div class="card-body">
+            <div class="form-group">
+              <label>Text or URL <span class="req">*</span></label>
+              <textarea id="qr-text-input" class="form-control" rows="4" placeholder="upi://pay?pa=merchant@upi&am=499&cu=INR&#10;or any text/URL..."></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Size (px)</label>
+                <input type="number" id="qr-size" class="form-control" value="300" min="100" max="800"/>
+              </div>
+              <div class="form-group">
+                <label>Color</label>
+                <input type="color" id="qr-dark" class="form-control" value="#000000"/>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" id="qr-btn" onclick="generateQR()">Generate QR Code</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div id="qr-gen-output">
+              <div style="width:200px;height:200px;background:var(--bg);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin:0 auto 12px;">Preview here</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ──────────────────────────────────── -->
+    <div class="vp-page" id="page-settings">
+      <div class="vp-page-header"><h1>Settings</h1><p>Manage your business profile and branding</p></div>
+      <div id="settings-alert" class="vp-alert"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:900px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Business Profile</span></div>
+          <div class="card-body">
+            <div class="form-group"><label>Business Name</label><input type="text" id="set-biz-name" class="form-control"/></div>
+            <div class="form-group"><label>Contact Phone</label><input type="tel" id="set-phone" class="form-control"/></div>
+            <div class="form-group"><label>Website</label><input type="url" id="set-website" class="form-control"/></div>
+            <div class="form-group"><label>Webhook URL</label><input type="url" id="set-webhook" class="form-control" placeholder="https://yoursite.com/webhook/vaultpay"/></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Checkout Branding</span></div>
+          <div class="card-body">
+            <div class="form-group"><label>Brand Color</label><input type="color" id="set-color" class="form-control" style="height:44px;"/></div>
+            <div class="form-group"><label>Logo URL</label><input type="url" id="set-logo" class="form-control" placeholder="https://..."/></div>
+            <!-- Live preview -->
+            <div style="border:1.5px solid var(--border);border-radius:10px;overflow:hidden;margin-top:4px;">
+              <div id="set-preview-header" style="padding:12px 16px;display:flex;align-items:center;gap:10px;">
+                <div id="set-preview-logo" style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:white;">A</div>
+                <span id="set-preview-name" style="font-size:14px;font-weight:700;color:white;">Your Business</span>
+              </div>
+              <div style="padding:10px 16px;text-align:center;font-size:12px;color:var(--muted);">Powered by <strong style="color:var(--brand);">VaultPay</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:16px;" id="save-settings-btn" onclick="saveSettings()">Save Changes</button>
+    </div>
+
+    <!-- ── API KEYS ──────────────────────────────────── -->
+    <div class="vp-page" id="page-apikeys">
+      <div class="vp-page-header"><h1>API Keys</h1><p>Authenticate your server integration</p></div>
+      <div class="card" style="max-width:680px;">
+        <div class="card-body">
+          <div style="background:var(--yellow-light);border:1px solid #fde68a;border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#92400e;">
+            ⚠ <strong>Keep your live key secret.</strong> Never put it in frontend JavaScript or commit it to Git. Use environment variables on your server.
+          </div>
+
+          <h4 style="font-size:14px;font-weight:800;margin-bottom:10px;">Test Mode</h4>
+          <div class="vp-key-box" style="margin-bottom:6px;">
+            <span class="vp-key-text" id="key-test">Loading...</span>
+            <button class="vp-key-copy" onclick="UI.copy(document.getElementById('key-test').textContent,'Test key copied!')">Copy</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:24px;">Use for development and testing. No real money moves.</p>
+
+          <h4 style="font-size:14px;font-weight:800;margin-bottom:10px;">Live Mode</h4>
+          <div class="vp-key-box" style="margin-bottom:6px;">
+            <span class="vp-key-text" id="key-live">vp_live_••••••••••••••••••••••••••••••••</span>
+            <button class="vp-key-copy" id="key-live-reveal" onclick="revealLiveKey()">Reveal</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:24px;">Use for real payments in production.</p>
+
+          <h4 style="font-size:14px;font-weight:800;margin-bottom:10px;">Webhook Secret</h4>
+          <div class="vp-key-box" style="margin-bottom:6px;">
+            <span class="vp-key-text" id="key-webhook">••••••••••••••••••••••••••••••••</span>
+            <button class="vp-key-copy" onclick="revealWebhookSecret()">Reveal</button>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin-bottom:24px;">Verify the <code>X-VaultPay-Signature</code> header on incoming webhooks.</p>
+
+          <div style="border-top:1px solid var(--border);padding-top:20px;">
+            <h4 style="font-size:14px;font-weight:800;margin-bottom:8px;">Rotate Keys</h4>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Rotating invalidates your current keys immediately. Update all your integrations before rotating.</p>
+            <button class="btn btn-danger btn-sm" onclick="rotateKeys()">🔄 Rotate All API Keys</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Payment Detail Modal -->
+<div class="vp-modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="vp-modal">
+    <button class="vp-modal-close" onclick="closeModal()">×</button>
+    <h3 id="modal-title" style="font-size:20px;font-weight:800;margin-bottom:6px;">Payment Details</h3>
+    <p id="modal-sub" style="font-size:13px;color:var(--muted);margin-bottom:20px;"></p>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script src="/config.js"></script>
+<script src="/assets/js/vp-utils.js"></script>
+<script>
+// ── Auth guard ─────────────────────────────────────────────────────────────
+if (!VP.isLoggedIn) window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+
+// ── State ─────────────────────────────────────────────────────────────────
+let allPayments = [];
+const SMS_SAMPLES = [
+  'Your a/c XXXX1234 is credited INR 499.00 by UPI. Ref No: 312456789012. -HDFC Bank',
+  'INR 250.00 debited from a/c XX5678. Txn ID: UPI312456789012. Bal: 12500.00. -SBI',
+  'Paid ₹499 to Demo Store. UPI Ref: 312456789012. PhonePe a/c XXXX9999 debited.',
+  'Your ICICI Bank Account XX9876 credited with INR 1,200.00. Ref: NEFT312456789.',
+  'Paid ₹99.00 via Paytm. Txn ID: PAY312456789012.',
+];
+
+// ── Init ───────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const m = VP.merchant;
+  if (m) {
+    document.getElementById('sb-biz-name').textContent  = m.business_name || m.name;
+    document.getElementById('sb-email').textContent     = m.email;
+    document.getElementById('overview-greeting').textContent = `Good ${getTimeOfDay()}, ${(m.business_name||m.name).split(' ')[0]}`;
+    document.getElementById('overview-sub').textContent = `${new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}`;
+  }
+
+  loadDashboard();
+  loadSMSSamples();
+  setupNavigation();
+  loadSettingsForm();
+  loadApiKeysPage();
+  setupSettingsPreview();
+
+  // Handle hash routing
+  const hash = location.hash.replace('#','');
+  if (hash) showPage(hash);
+});
+
+function getTimeOfDay() {
+  const h = new Date().getHours();
+  return h < 12 ? 'morning' : h < 17 ? 'afternoon' : 'evening';
+}
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+function setupNavigation() {
+  document.querySelectorAll('.vp-sidebar-link').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const page = link.dataset.page;
+      showPage(page);
+      history.pushState(null, '', '#' + page);
+    });
+  });
+  window.addEventListener('popstate', () => {
+    const hash = location.hash.replace('#','');
+    if (hash) showPage(hash, false);
+  });
+}
+
+function showPage(page, pushState = true) {
+  document.querySelectorAll('.vp-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.vp-sidebar-link').forEach(l => l.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  const linkEl = document.querySelector(`[data-page="${page}"]`);
+  if (pageEl) pageEl.classList.add('active');
+  if (linkEl) linkEl.classList.add('active');
+  if (pushState) history.pushState(null, '', '#' + page);
+  // Lazy load
+  if (page === 'payments') loadPayments();
+  if (page === 'settings') loadSettingsForm();
+  if (page === 'apikeys')  loadApiKeysPage();
+}
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const data = await VP.get('/merchants/dashboard');
+    const s = data.stats;
+    document.getElementById('st-volume').textContent   = UI.formatAmount(s.total_volume || 0);
+    document.getElementById('st-captured').textContent = s.captured || 0;
+    document.getElementById('st-pending').textContent  = s.pending  || 0;
+    document.getElementById('st-total').textContent    = s.total_payments || 0;
+
+    if (data.recent_payments?.length) {
+      renderPaymentsTable(data.recent_payments, 'recent-table', true);
+    } else {
+      document.getElementById('recent-table').innerHTML = UI.empty('No payments yet. Create your first payment.');
+    }
+  } catch (err) {
+    document.getElementById('recent-table').innerHTML = `<div style="padding:20px;color:var(--red);font-size:13px;">⚠ ${err.message}</div>`;
+  }
+}
+
+// ── Payments ───────────────────────────────────────────────────────────────
+async function loadPayments() {
+  document.getElementById('payments-table').innerHTML = '<div style="padding:32px;text-align:center;color:var(--muted);">Loading...</div>';
+  try {
+    const data = await VP.apiGet('/payments?limit=100');
+    allPayments = data.payments || [];
+    renderPaymentsTable(allPayments, 'payments-table', false);
+  } catch (err) {
+    document.getElementById('payments-table').innerHTML = `<div style="padding:20px;color:var(--red);">${err.message}</div>`;
+  }
+}
+
+function filterPaymentsTable() {
+  const q = document.getElementById('pay-search').value.toLowerCase();
+  const s = document.getElementById('pay-filter').value;
+  const filtered = allPayments.filter(p =>
+    (!q || p.id.includes(q) || p.order_id.includes(q) || (p.customer_email||'').includes(q) || (p.customer_name||'').toLowerCase().includes(q)) &&
+    (!s || p.status === s)
+  );
+  renderPaymentsTable(filtered, 'payments-table', false);
+}
+
+function renderPaymentsTable(payments, containerId, mini) {
+  const el = document.getElementById(containerId);
+  if (!payments.length) { el.innerHTML = UI.empty('No payments found'); return; }
+  const rows = payments.map(p => `
+    <tr onclick="openPaymentModal('${p.id}')" style="cursor:pointer;">
+      <td class="td-mono">${p.id.substring(0,16)}...</td>
+      <td><span style="font-family:var(--mono);font-size:12px;">${p.order_id}</span></td>
+      <td><strong>${UI.formatAmount(p.amount, p.currency)}</strong></td>
+      ${mini ? '' : `<td>${p.customer_name||'—'}</td><td style="font-size:12px;color:var(--muted);">${p.customer_email||'—'}</td>`}
+      <td>${UI.statusBadge(p.status)}</td>
+      <td style="font-size:12px;color:var(--muted);">${UI.formatDate(p.created_at)}</td>
+    </tr>`).join('');
+  const headers = mini
+    ? '<tr><th>Payment ID</th><th>Order</th><th>Amount</th><th>Status</th><th>Date</th></tr>'
+    : '<tr><th>Payment ID</th><th>Order</th><th>Amount</th><th>Customer</th><th>Email</th><th>Status</th><th>Date</th></tr>';
+  el.innerHTML = `<table class="vp-table"><thead>${headers}</thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── Create Payment ──────────────────────────────────────────────────────────
+async function createPayment() {
+  const alertEl = document.getElementById('create-alert');
+  const btn     = document.getElementById('create-btn');
+  UI.clearAlert(alertEl);
+
+  const amountRs = parseFloat(document.getElementById('c-amount').value);
+  if (!amountRs || amountRs < 1) return UI.alert(alertEl,'error','Enter a valid amount (min ₹1)');
+
+  const customer_name  = document.getElementById('c-cname').value.trim();
+  const customer_email = document.getElementById('c-cemail').value.trim();
+  const customer_phone = document.getElementById('c-cphone').value.trim();
+
+  if (!customer_name || !customer_email) return UI.alert(alertEl,'error','Customer name and email are required');
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer_email)) return UI.alert(alertEl,'error','Enter a valid customer email');
+
+  const body = {
+    order_id:    (document.getElementById('c-order').value.trim() || `ORD-${Date.now()}`),
+    amount:      Math.round(amountRs * 100),
+    currency:    document.getElementById('c-currency').value,
+    expires_in:  parseInt(document.getElementById('c-expires').value),
+    customer:    { name: customer_name, email: customer_email, phone: customer_phone || '+910000000000' },
+    description: document.getElementById('c-desc').value.trim(),
+    redirect_url: document.getElementById('c-redirect').value.trim() || undefined,
+  };
+
+  UI.setLoading(btn, true, 'Generating...');
+  try {
+    const data = await VP.apiPost('/payments/create', body);
+    document.getElementById('qr-output-img').src = data.qr_code;
+    document.getElementById('qr-link-url').textContent = data.gateway_url;
+    document.getElementById('open-checkout-btn').onclick = () => window.open(data.gateway_url, '_blank');
+    document.getElementById('qr-output-card').style.display = 'block';
+    document.getElementById('qr-placeholder-card').style.display = 'none';
+    UI.alert(alertEl,'success','✅ Payment link created!');
+    loadDashboard();
+  } catch (err) {
+    UI.alert(alertEl,'error', err.message);
+  }
+  UI.setLoading(btn, false);
+}
+
+// ── SMS Parser ──────────────────────────────────────────────────────────────
+function loadSMSSamples() {
+  const el = document.getElementById('sms-samples');
+  el.innerHTML = SMS_SAMPLES.map((s,i) => `
+    <div onclick="document.getElementById('sms-input').value='${s.replace(/'/g,"\\'")}'" style="padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;color:var(--muted);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:border-color .2s;"
+      onmouseover="this.style.borderColor='var(--brand)'" onmouseout="this.style.borderColor='var(--border)'">${s}</div>`).join('');
+}
+
+async function parseSMS() {
+  const sms = document.getElementById('sms-input').value.trim();
+  const pid = document.getElementById('sms-pid').value.trim();
+  const btn = document.getElementById('sms-btn');
+  if (!sms) return UI.alert(document.getElementById('sms-alert'),'error','Paste an SMS first');
+
+  UI.setLoading(btn, true, 'Parsing...');
+  try {
+    const data = await VP.apiPost('/sms/parse', { sms, ...(pid && { payment_id: pid }) });
+    const { parsed, action_taken } = data;
+    const isOk = ['captured','auto_captured','already_processed'].includes(action_taken);
+    const card = document.getElementById('sms-result-card');
+    card.style.display = 'block';
+    card.style.background = isOk ? 'var(--green-light)' : parsed.amount ? 'var(--yellow-light)' : 'var(--red-light)';
+    card.style.border = `1px solid ${isOk ? '#a7f3d0' : parsed.amount ? '#fde68a' : '#fecaca'}`;
+    document.getElementById('sms-result-title').textContent = isOk ? '✅ Payment Confirmed' : parsed.amount ? '⚠ Amount Detected — Verify Manually' : '❌ No Payment Found in SMS';
+    document.getElementById('sms-result-rows').innerHTML = [
+      ['Amount',         parsed.amount ? `₹${parsed.amount}` : '—'],
+      ['Transaction ID', parsed.transaction_id || '—'],
+      ['Bank / App',     parsed.bank || '—'],
+      ['Type',           parsed.type || '—'],
+      ['Action',         action_taken || 'none'],
+    ].map(([k,v]) => `<div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">${k}</span><span style="font-weight:600;font-family:var(--mono);font-size:12px;">${v}</span></div>`).join('');
+  } catch (err) {
+    UI.alert(document.getElementById('sms-alert'), 'error', err.message);
+  }
+  UI.setLoading(btn, false);
+}
+
+// ── QR Generator ────────────────────────────────────────────────────────────
+async function generateQR() {
+  const text = document.getElementById('qr-text-input').value.trim();
+  const btn  = document.getElementById('qr-btn');
+  if (!text) return UI.toast('Enter text for QR code');
+
+  UI.setLoading(btn, true, 'Generating...');
+  try {
+    const data = await VP.apiPost('/qr/generate', {
+      text,
+      width: Math.min(parseInt(document.getElementById('qr-size').value)||300, 512),
+      dark_color: document.getElementById('qr-dark').value,
+    });
+    const output = document.getElementById('qr-gen-output');
+    output.innerHTML = `
+      <img src="${data.qr_code}" style="max-width:240px;border-radius:12px;background:white;padding:12px;border:1.5px solid var(--border);" />
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">
+        <a href="${data.qr_code}" download="vaultpay-qr.png" class="btn btn-outline btn-sm">⬇ Download</a>
+        <button class="btn btn-sm" style="background:var(--brand-light);color:var(--brand);border:none;" onclick="UI.copy('${text}','Text copied!')">Copy Text</button>
+      </div>`;
+  } catch (err) {
+    UI.toast('Error: ' + err.message);
+  }
+  UI.setLoading(btn, false);
+}
+
+// ── Settings ────────────────────────────────────────────────────────────────
+async function loadSettingsForm() {
+  try {
+    const data = await VP.get('/merchants/me');
+    document.getElementById('set-biz-name').value  = data.business_name || data.name || '';
+    document.getElementById('set-phone').value     = data.phone || '';
+    document.getElementById('set-website').value   = data.website || '';
+    document.getElementById('set-webhook').value   = data.webhook_url || '';
+    document.getElementById('set-color').value     = data.brand_color || '#5b4fff';
+    document.getElementById('set-logo').value      = data.logo_url || '';
+    updateSettingsPreview(data.brand_color || '#5b4fff', data.business_name || data.name || '');
+  } catch (_) {}
+}
+
+function setupSettingsPreview() {
+  ['set-color','set-biz-name','set-logo'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+      const color = document.getElementById('set-color').value;
+      const name  = document.getElementById('set-biz-name').value || 'Your Business';
+      updateSettingsPreview(color, name);
+    });
+  });
+}
+
+function updateSettingsPreview(color, name) {
+  document.getElementById('set-preview-header').style.background = color;
+  document.getElementById('set-preview-name').textContent = name;
+  document.getElementById('set-preview-logo').textContent = name.charAt(0).toUpperCase();
+}
+
+async function saveSettings() {
+  const alertEl = document.getElementById('settings-alert');
+  const btn     = document.getElementById('save-settings-btn');
+  UI.clearAlert(alertEl);
+  UI.setLoading(btn, true, 'Saving...');
+  try {
+    await VP.put('/merchants/me', {
+      business_name: document.getElementById('set-biz-name').value.trim(),
+      phone:         document.getElementById('set-phone').value.trim(),
+      website:       document.getElementById('set-website').value.trim(),
+      webhook_url:   document.getElementById('set-webhook').value.trim() || undefined,
+      brand_color:   document.getElementById('set-color').value,
+      logo_url:      document.getElementById('set-logo').value.trim(),
+    });
+    UI.alert(alertEl,'success','✅ Settings saved');
+    // Update sidebar
+    const m = VP.merchant;
+    if (m) {
+      m.business_name = document.getElementById('set-biz-name').value.trim();
+      VP.merchant = m;
+      document.getElementById('sb-biz-name').textContent = m.business_name;
+    }
+  } catch (err) {
+    UI.alert(alertEl,'error', err.message);
+  }
+  UI.setLoading(btn, false);
+}
+
+// ── API Keys ─────────────────────────────────────────────────────────────────
+function loadApiKeysPage() {
+  const testKey = VP.testKey;
+  if (testKey) document.getElementById('key-test').textContent = testKey;
+}
+
+function revealLiveKey() {
+  const lk = localStorage.getItem('vp_live_key');
+  if (lk) {
+    document.getElementById('key-live').textContent = lk;
+    document.getElementById('key-live-reveal').textContent = 'Copy';
+    document.getElementById('key-live-reveal').onclick = () => UI.copy(lk,'Live key copied!');
+  } else {
+    document.getElementById('key-live').textContent = 'Not stored — rotate to get a new key';
+  }
+}
+
+function revealWebhookSecret() {
+  const ws = localStorage.getItem('vp_webhook_secret');
+  if (ws) {
+    document.getElementById('key-webhook').textContent = ws;
+  } else {
+    document.getElementById('key-webhook').textContent = 'Not stored locally';
+  }
+}
+
+async function rotateKeys() {
+  if (!confirm('Rotate API keys? All existing keys will stop working immediately.\n\nMake sure to update your server integrations after rotation.')) return;
+  try {
+    const data = await VP.post('/auth/rotate-keys', { type: 'both' });
+    if (data.test_key) {
+      VP.testKey = data.test_key;
+      localStorage.setItem('vp_live_key', data.live_key || '');
+      document.getElementById('key-test').textContent = data.test_key;
+      document.getElementById('key-live').textContent = data.live_key || '—';
+      UI.toast('✅ Keys rotated. Update your server immediately!');
+    }
+  } catch (err) {
+    UI.toast('Error: ' + err.message);
+  }
+}
+
+// ── Payment Modal ─────────────────────────────────────────────────────────────
+async function openPaymentModal(pid) {
+  const overlay = document.getElementById('modal-overlay');
+  const body    = document.getElementById('modal-body');
+  overlay.classList.add('open');
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Loading...</div>';
+
+  try {
+    const p = await VP.apiGet(`/payments/${pid}`);
+    document.getElementById('modal-title').textContent = 'Payment Details';
+    document.getElementById('modal-sub').textContent = `Order: ${p.order_id}`;
+
+    const rows = [
+      ['Payment ID',    `<span style="font-family:var(--mono);font-size:12px;color:var(--brand);">${p.id}</span>`],
+      ['Status',        UI.statusBadge(p.status)],
+      ['Amount',        `<strong>${UI.formatAmount(p.amount,p.currency)}</strong>`],
+      ['Customer',      p.customer_name || '—'],
+      ['Email',         p.customer_email || '—'],
+      ['Phone',         p.customer_phone || '—'],
+      ['Description',   p.description || '—'],
+      ['Created',       UI.formatDate(p.created_at)],
+      ['Expires',       UI.formatDate(p.expires_at)],
+      ...(p.captured_at ? [['Captured', UI.formatDate(p.captured_at)]] : []),
+    ];
+
+    body.innerHTML = `
+      <div style="display:grid;gap:8px;margin-bottom:20px;">
+        ${rows.map(([k,v]) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><span style="color:var(--muted);">${k}</span><span>${v}</span></div>`).join('')}
+      </div>
+      ${p.qr_code ? `<div style="text-align:center;margin-bottom:16px;"><img src="${p.qr_code}" style="width:140px;height:140px;border-radius:8px;background:white;padding:8px;border:1.5px solid var(--border);"/></div>` : ''}
+      <div style="display:flex;gap:8px;">
+        ${p.status==='created' ? `<button class="btn btn-primary btn-sm" style="flex:1;" onclick="capturePayment('${p.id}')">✓ Capture Payment</button>` : ''}
+        ${p.status==='captured' ? `<button class="btn btn-danger btn-sm" style="flex:1;" onclick="refundPayment('${p.id}')">↩ Refund</button>` : ''}
+        <a href="${p.id ? `/pay/?id=${p.id}` : '#'}" target="_blank" class="btn btn-outline btn-sm" style="flex:1;">🔗 Open Checkout</a>
+      </div>`;
+  } catch (err) {
+    body.innerHTML = `<p style="color:var(--red);">${err.message}</p>`;
+  }
+}
+
+async function capturePayment(pid) {
+  try {
+    await VP.apiPost(`/payments/${pid}/capture`);
+    closeModal();
+    UI.toast('✅ Payment captured! Email sent to customer.');
+    loadDashboard();
+  } catch (err) { UI.toast('Error: ' + err.message); }
+}
+
+async function refundPayment(pid) {
+  if (!confirm('Refund this payment?')) return;
+  try {
+    await VP.apiPost(`/payments/${pid}/refund`);
+    closeModal();
+    UI.toast('↩ Refund initiated');
+    loadDashboard();
+  } catch (err) { UI.toast('Error: ' + err.message); }
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+}
+</script>
+</body>
+</html>

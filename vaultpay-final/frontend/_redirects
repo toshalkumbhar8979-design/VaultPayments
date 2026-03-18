@@ -1,0 +1,21 @@
+# VaultPay — Cloudflare Pages Routing
+# This file handles SPA routing so all deep links work
+
+# Dashboard SPA - any /dashboard/* goes to dashboard/index.html
+/dashboard/*  /dashboard/index.html  200
+
+# Pay page - /pay/* handled by pay/index.html (which reads ?id= from query)
+/pay/*        /pay/index.html        200
+
+# Admin
+/admin/*      /admin/index.html      200
+
+# Docs
+/docs/*       /docs/index.html       200
+
+# Auth pages
+/login        /login.html            200
+/signup       /signup.html           200
+
+# All other unknown routes → 404 page
+/*            /404.html              404
