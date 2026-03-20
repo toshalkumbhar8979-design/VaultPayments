@@ -6,23 +6,21 @@
   <title>Sign In — NexusPay</title>
   <link rel="stylesheet" href="./assets/css/np-global.css"/>
 </head>
-<body>
+<body style="background:var(--bg);">
 <div class="np-auth-wrap">
   <div class="np-auth-card">
 
-    <div class="np-auth-logo">
-      <div class="np-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
-        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>
-      </div>
+    <a href="./" class="np-auth-logo">
+      <div class="np-nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="#fff" stroke-width="1.5"/></svg></div>
       <span class="np-nav-logo-text">NexusPay</span>
-    </div>
+    </a>
 
     <h2 class="np-auth-title">Welcome back</h2>
     <p class="np-auth-sub">Sign in to your merchant dashboard</p>
 
     <div id="alert" class="np-alert"></div>
 
-    <form id="login-form" novalidate>
+    <form id="formLogin" novalidate>
       <div class="form-group">
         <label>Business Email <span class="req">*</span></label>
         <input type="email" id="email" class="form-control" placeholder="you@yourbusiness.com" autocomplete="email" required/>
@@ -44,17 +42,32 @@
       </button>
     </form>
 
-    <p style="text-align:center;font-size:14px;color:var(--muted);margin-top:24px;">
+    <p class="auth-btm" style="text-align:center;font-size:14px;color:var(--muted);margin-top:24px;">
       New to NexusPay?
       <a href="./signup.html" style="font-weight:700;">Create free account →</a>
     </p>
   </div>
 </div>
 
+<script src="./assets/js/gsap/gsap.min.js"></script>
+<script src="./assets/js/gsap/SplitText.min.js"></script>
 <script src="./config.js"></script>
 <script src="./assets/js/np-utils.js"></script>
 <script>
-document.getElementById('login-form').addEventListener('submit', async (e) => {
+// GSAP Premium Setup
+gsap.registerPlugin(SplitText);
+
+// Initial GSAP Reveal
+const titleSplit = new SplitText(".np-auth-title", { type: "words,chars" });
+const tl = gsap.timeline();
+
+tl.fromTo(".np-auth-card", { y: 40, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 1, ease: "power4.out" })
+  .fromTo(titleSplit.chars, { opacity: 0, y: 10, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.5, stagger: 0.03, ease: "power2.out" }, "-=0.5")
+  .fromTo(".np-auth-logo, .np-auth-sub, .form-group, .btn-primary, .auth-btm",
+    { y: 20, opacity: 0 },
+    { y: 0, opacity: 1, duration: 0.8, stagger: 0.1, ease: "power3.out" }, "-=0.3");
+
+document.getElementById('formLogin').addEventListener('submit', async (e) => {
   e.preventDefault();
   const email    = document.getElementById('email').value.trim();
   const password = document.getElementById('password').value;

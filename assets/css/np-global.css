@@ -2,32 +2,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --brand:        #5b4fff;
-  --brand-dark:   #4338ca;
-  --brand-light:  #eef2ff;
-  --brand-glow:   rgba(91,79,255,0.18);
-  --accent:       #00e5c0;
-  --surface:      #ffffff;
-  --bg:           #f8f8fc;
-  --card:         #ffffff;
-  --border:       #e5e7eb;
-  --border-dark:  #d1d5db;
-  --text:         #111827;
-  --text-soft:    #374151;
-  --muted:        #6b7280;
-  --muted-light:  #9ca3af;
-  --green:        #10b981;
-  --green-light:  #d1fae5;
-  --red:          #ef4444;
-  --red-light:    #fee2e2;
-  --yellow:       #f59e0b;
-  --yellow-light: #fef3c7;
+  --brand:        #ffffff;
+  --brand-dark:   #e4e4e7;
+  --brand-light:  #27272a;
+  --brand-glow:   rgba(255,255,255,0.1);
+  --accent:       #4ADE80;
+  --surface:      #09090b;
+  --bg:           #000000;
+  --card:         #121214;
+  --border:       rgba(255,255,255,0.08);
+  --border-dark:  rgba(255,255,255,0.15);
+  --text:         #fafafa;
+  --text-soft:    #e4e4e7;
+  --muted:        #a1a1aa;
+  --muted-light:  #71717a;
+  --green:        #4ADE80;
+  --green-light:  rgba(74, 222, 128, 0.1);
+  --red:          #f87171;
+  --red-light:    rgba(248, 113, 113, 0.1);
+  --yellow:       #fbbf24;
+  --yellow-light: rgba(251, 191, 36, 0.1);
   --radius-sm:    8px;
   --radius:       12px;
   --radius-lg:    20px;
-  --shadow-sm:    0 1px 3px rgba(0,0,0,0.08);
-  --shadow:       0 4px 16px rgba(0,0,0,0.08);
-  --shadow-lg:    0 16px 48px rgba(0,0,0,0.12);
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.5);
+  --shadow:       0 10px 30px rgba(0,0,0,0.8);
+  --shadow-lg:    0 20px 60px rgba(0,0,0,0.9);
   --font:         'Plus Jakarta Sans', system-ui, sans-serif;
   --mono:         'JetBrains Mono', monospace;
 }
@@ -60,13 +60,13 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
 }
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-primary {
-  background: var(--brand); color: #fff;
+  background: var(--brand); color: #000;
   box-shadow: 0 4px 14px var(--brand-glow);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--brand-dark); transform: translateY(-1px);
   box-shadow: 0 6px 20px var(--brand-glow);
-  text-decoration: none; color: #fff;
+  text-decoration: none; color: #000;
 }
 .btn-outline {
   background: transparent; color: var(--text-soft);
@@ -100,7 +100,7 @@ code, .mono { font-family: var(--mono); font-size: 0.875em; }
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   font-family: var(--font); font-size: 14px; color: var(--text);
-  background: #fff; outline: none;
+  background: var(--surface); outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .form-control:focus {
@@ -144,22 +144,21 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Nav ────────────────────────────────── */
 .np-nav {
   position: sticky; top: 0; z-index: 100;
-  height: 60px; background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
+  height: 64px; background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
-  padding: 0 24px; gap: 24px;
+  padding: 0 32px; gap: 24px;
 }
 .np-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .np-nav-logo-mark {
-  width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--brand), #8b5cf6);
-  border-radius: 9px;
+  width: 32px; height: 32px;
+  background: var(--white);
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 8px var(--brand-glow);
 }
-.np-nav-logo-mark svg { width: 18px; height: 18px; fill: white; }
-.np-nav-logo-text { font-size: 18px; font-weight: 900; color: var(--text); letter-spacing: -0.5px; }
+.np-nav-logo-mark svg { width: 16px; height: 16px; fill: #000; }
+.np-nav-logo-text { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
 .np-nav-links { display: flex; gap: 4px; list-style: none; }
 .np-nav-links a { padding: 7px 14px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; transition: all 0.2s; }
 .np-nav-links a:hover, .np-nav-links a.active { color: var(--brand); background: var(--brand-light); }
@@ -174,9 +173,9 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   padding: 20px 12px; overflow-y: auto;
 }
 .np-sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 6px 10px; margin-bottom: 24px; }
-.np-sidebar-logo-mark { width: 32px; height: 32px; background: linear-gradient(135deg,var(--brand),#8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.np-sidebar-logo-mark svg { width: 16px; height: 16px; fill: white; }
-.np-sidebar-logo-text { font-size: 17px; font-weight: 900; color: var(--text); }
+.np-sidebar-logo-mark { width: 32px; height: 32px; background: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.np-sidebar-logo-mark svg { width: 16px; height: 16px; fill: #000; }
+.np-sidebar-logo-text { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
 .np-sidebar-section { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--muted-light); padding: 14px 10px 6px; }
 .np-sidebar-link {
   display: flex; align-items: center; gap: 10px;
@@ -224,9 +223,9 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Auth pages ─────────────────────────── */
 .np-auth-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
-  padding: 24px; background: linear-gradient(135deg,#f0f0ff 0%,#f8f8fc 50%,#fff0f8 100%);
+  padding: 24px; background: var(--bg);
 }
-.np-auth-card { width: 100%; max-width: 480px; background: #fff; border-radius: var(--radius-lg); padding: 40px 40px; box-shadow: 0 20px 60px rgba(91,79,255,0.12); border: 1px solid rgba(91,79,255,0.08); }
+.np-auth-card { width: 100%; max-width: 480px; background: var(--card); border-radius: 24px; padding: 48px; box-shadow: 0 30px 60px rgba(0,0,0,0.8); border: 1px solid var(--border); }
 .np-auth-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
 .np-auth-title { font-size: 26px; font-weight: 900; margin-bottom: 6px; letter-spacing: -0.5px; }
 .np-auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
@@ -235,9 +234,9 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 .np-steps { display: flex; gap: 0; margin-bottom: 28px; }
 .np-step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; }
 .np-step:not(:last-child)::after { content: ''; position: absolute; top: 16px; left: 50%; width: 100%; height: 2px; background: var(--border); z-index: 0; }
-.np-step-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: var(--muted); z-index: 1; position: relative; transition: all 0.2s; }
-.np-step.active .np-step-circle { background: var(--brand); border-color: var(--brand); color: white; }
-.np-step.done .np-step-circle { background: var(--green); border-color: var(--green); color: white; }
+.np-step-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--muted); z-index: 1; position: relative; transition: all 0.2s; }
+.np-step.active .np-step-circle { background: var(--white); border-color: var(--white); color: #000; }
+.np-step.done .np-step-circle { background: var(--green); border-color: var(--green); color: #000; }
 .np-step-label { font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 6px; text-align: center; }
 .np-step.active .np-step-label { color: var(--brand); }
 

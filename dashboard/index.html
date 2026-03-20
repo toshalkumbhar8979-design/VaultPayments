@@ -355,9 +355,20 @@
   </div>
 </div>
 
+<script src="../assets/js/gsap/gsap.min.js"></script>
+<script src="../assets/js/gsap/SplitText.min.js"></script>
+<script src="../assets/js/gsap/ScrambleTextPlugin.min.js"></script>
 <script src="../config.js"></script>
 <script src="../assets/js/np-utils.js"></script>
 <script>
+// GSAP Premium Setup
+gsap.registerPlugin(SplitText, ScrambleTextPlugin);
+
+// GSAP Initial Dashboard Load
+const sideTl = gsap.timeline();
+sideTl.fromTo(".np-sidebar", { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.8, ease: "power3.out" })
+      .fromTo(".np-sidebar-link, .np-sidebar-section, .np-sidebar-merchant", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, stagger: 0.05, ease: "power2.out" }, "-=0.4");
+
 // ── Auth guard ─────────────────────────────────────────────────────────────
 if (!VP.isLoggedIn) window.location.href = '../login.html?redirect=' + encodeURIComponent(window.location.pathname);
 
@@ -419,9 +430,40 @@ function showPage(page, pushState = true) {
   document.querySelectorAll('.np-sidebar-link').forEach(l => l.classList.remove('active'));
   const pageEl = document.getElementById('page-' + page);
   const linkEl = document.querySelector(`[data-page="${page}"]`);
-  if (pageEl) pageEl.classList.add('active');
+  
+  if (pageEl) {
+    pageEl.classList.add('active');
+    // Animate page content
+    const header = pageEl.querySelector('h1');
+    const stats = pageEl.querySelectorAll('.np-stat');
+    const cards = pageEl.querySelectorAll('.card');
+    
+    const pageTl = gsap.timeline();
+    
+    if (header) {
+      const split = new SplitText(header, { type: "chars,words" });
+      pageTl.fromTo(split.chars, { opacity: 0, y: 10, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.5, stagger: 0.02, ease: "power2.out" });
+    }
+    
+    if (stats.length) {
+      pageTl.fromTo(stats, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: "power2.out" }, "-=0.3");
+      
+      // Scramble numbers if they exist
+      pageEl.querySelectorAll('.np-stat-value').forEach(val => {
+        const txt = val.textContent;
+        if (txt !== 'Loading...' && txt !== '0' && txt !== '₹0') {
+           gsap.to(val, { scrambleText: { text: txt, chars: "0123456789₹,.", speed: 0.5 }, duration: 1 });
+        }
+      });
+    }
+    
+    if (cards.length) {
+      pageTl.fromTo(cards, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: "power2.out" }, "-=0.3");
+    }
+  }
   if (linkEl) linkEl.classList.add('active');
   if (pushState) history.pushState(null, '', '#' + page);
+  
   // Lazy load
   if (page === 'payments') loadPayments();
   if (page === 'settings') loadSettingsForm();

@@ -23,17 +23,17 @@
     .key-value { font-family: var(--mono); font-size: 13px; color: var(--brand); word-break: break-all; }
   </style>
 </head>
-<body>
+<body style="background:var(--bg);">
 <div class="np-auth-wrap" style="align-items:flex-start;padding-top:40px;">
   <div class="np-auth-card" style="max-width:560px;">
 
     <!-- Logo -->
-    <div class="np-auth-logo">
+    <a href="./" class="np-auth-logo">
       <div class="np-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
-        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="#fff" stroke-width="1.5"/></svg>
       </div>
       <span class="np-nav-logo-text">NexusPay</span>
-    </div>
+    </a>
 
     <!-- Steps Indicator -->
     <div class="np-steps" id="steps-indicator">
@@ -223,15 +223,30 @@
   </div>
 </div>
 
+<script src="./assets/js/gsap/gsap.min.js"></script>
+<script src="./assets/js/gsap/SplitText.min.js"></script>
 <script src="./config.js"></script>
 <script src="./assets/js/np-utils.js"></script>
 <script>
+// GSAP Premium Setup
+gsap.registerPlugin(SplitText);
+
+// Initial GSAP Reveal
+const titleSplit = new SplitText(".np-auth-title", { type: "chars,words" });
+gsap.fromTo(".np-auth-card", { y: 40, opacity: 0, scale: 0.95 }, { y: 0, opacity: 1, scale: 1, duration: 1, ease: "power4.out" });
+gsap.fromTo(titleSplit.chars, { opacity: 0, y: 10, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.5, stagger: 0.02, ease: "power2.out", delay: 0.3 });
+
 let selectedBizType = '';
 let selectedColor   = '#5b4fff';
+let currentStep     = 1;
 
 // ── Step Navigation ──────────────────────────────────────────
 function goStep(n) {
-  document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i === n-1));
+  if (n === currentStep) return;
+  const oldStep = currentStep;
+  currentStep = n;
+
+  // Animate indicators
   document.querySelectorAll('[id^="step-ind-"]').forEach((el,i) => {
     const idx = i+1;
     el.classList.remove('active','done');
@@ -239,7 +254,28 @@ function goStep(n) {
     if (idx === n) el.classList.add('active');
     if (idx <= n) el.querySelector('.np-step-circle').textContent = idx < n ? '✓' : idx;
   });
-  window.scrollTo({top:0,behavior:'smooth'});
+
+  // Crossfade Panels with GSAP
+  const oldPanel = document.getElementById(`panel-${oldStep}`);
+  const newPanel = document.getElementById(`panel-${n}`);
+
+  gsap.to(oldPanel, { opacity: 0, x: (n > oldStep ? -30 : 30), duration: 0.3, ease: "power2.in", onComplete: () => {
+    oldPanel.classList.remove('active');
+    newPanel.classList.add('active');
+    
+    // Split text for new step title
+    const newTitle = newPanel.querySelector('.np-auth-title');
+    if (newTitle) {
+      const split = new SplitText(newTitle, { type: "chars,words" });
+      gsap.fromTo(split.chars, { opacity: 0, y: 10, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.4, stagger: 0.02, ease: "power2.out" });
+    }
+
+    gsap.fromTo(newPanel, 
+      { opacity: 0, x: (n > oldStep ? 30 : -30) }, 
+      { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }
+    );
+    window.scrollTo({top:0,behavior:'smooth'});
+  }});
 }
 
 function goStep2() {

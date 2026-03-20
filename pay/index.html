@@ -9,31 +9,32 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{
-      --brand:#5b4fff;--brand-dark:#4338ca;
+      --brand:#000000; /* Default if not loaded */
+      --brand-dark:#111111;
       --font:'Plus Jakarta Sans',system-ui,sans-serif;
       --mono:'JetBrains Mono',monospace;
     }
-    body{font-family:var(--font);background:#f4f4f5;min-height:100vh;overflow-x:hidden;}
+    body{font-family:var(--font);background:#f4f4f5;min-height:100vh;overflow-x:hidden;margin:0;}
 
     /* ── Loading ─────────────── */
-    #loading{position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:100;transition:opacity .4s;}
-    #loading.done{opacity:0;pointer-events:none;}
-    .spinner{width:40px;height:40px;border:3px solid rgba(91,79,255,0.15);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;}
+    #loading{position:fixed;inset:0;background:white;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;z-index:100;}
+    .spinner{width:32px;height:32px;position:relative;}
+    .spinner::before,.spinner::after{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid;border-color:#000 transparent transparent transparent;animation:spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;}
+    .spinner::after{border-color:transparent transparent #000 transparent;animation:spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;}
     @keyframes spin{to{transform:rotate(360deg)}}
 
     /* ── Split Layout ────────── */
-    .checkout{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;}
+    .checkout{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;opacity:0;}
 
     /* ── Left Panel ──────────── */
     .left{
       background:var(--brand);
-      background-image:radial-gradient(ellipse at 30% 60%,rgba(255,255,255,.1),transparent 60%);
-      padding:48px 44px;display:flex;flex-direction:column;color:white;position:relative;overflow:hidden;
+      padding:64px 56px;display:flex;flex-direction:column;color:white;position:relative;overflow:hidden;
     }
-    .left::before{content:'';position:absolute;width:300px;height:300px;background:rgba(255,255,255,.06);border-radius:50%;top:-100px;right:-80px;}
-    .left::after{content:'';position:absolute;width:200px;height:200px;background:rgba(255,255,255,.04);border-radius:50%;bottom:30px;left:-60px;}
-    .biz-header{display:flex;align-items:center;gap:14px;margin-bottom:44px;position:relative;z-index:1;}
-    .biz-logo{width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.2);border:1.5px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;overflow:hidden;flex-shrink:0;}
+    .left::before{content:'';position:absolute;width:400px;height:400px;background:rgba(255,255,255,.03);border-radius:50%;top:-150px;right:-100px;pointer-events:none;}
+    .left::after{content:'';position:absolute;width:300px;height:300px;background:rgba(255,255,255,.02);border-radius:50%;bottom:-50px;left:-100px;pointer-events:none;}
+    .biz-header{display:flex;align-items:center;gap:16px;margin-bottom:56px;position:relative;z-index:1;}
+    .biz-logo{width:56px;height:56px;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;overflow:hidden;flex-shrink:0;}
     .biz-logo img{width:100%;height:100%;object-fit:cover;}
     .biz-name{font-size:18px;font-weight:800;}
     .biz-type{font-size:13px;opacity:.7;margin-top:2px;}
@@ -50,19 +51,19 @@
     .sec-badge{display:flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:7px;font-size:11px;font-weight:600;}
 
     /* ── Right Panel ─────────── */
-    .right{background:white;padding:40px 40px;display:flex;flex-direction:column;overflow-y:auto;}
-    .powered-row{display:flex;justify-content:flex-end;margin-bottom:24px;}
-    .powered{display:flex;align-items:center;gap:8px;text-decoration:none;background:#f9f9ff;border:1px solid #e0e0ff;border-radius:9px;padding:5px 12px;transition:all .2s;}
-    .powered:hover{background:#f0f0ff;}
-    .powered-icon{width:20px;height:20px;background:var(--brand);border-radius:5px;display:flex;align-items:center;justify-content:center;}
-    .powered-icon svg{width:11px;height:11px;fill:white;}
-    .powered span{font-size:12px;color:#6b7280;font-weight:600;}
-    .powered strong{color:var(--brand);}
+    .right{background:#ffffff;padding:56px 56px;display:flex;flex-direction:column;overflow-y:auto;}
+    .powered-row{display:flex;justify-content:flex-end;margin-bottom:32px;}
+    .powered{display:flex;align-items:center;gap:8px;text-decoration:none;background:#fafafa;border:1px solid #e4e4e7;border-radius:100px;padding:6px 14px;transition:all .2s;}
+    .powered:hover{background:#f4f4f5;border-color:#d4d4d8;}
+    .powered-icon{width:20px;height:20px;background:#000;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+    .powered-icon svg{width:12px;height:12px;fill:white;}
+    .powered span{font-size:12px;color:#71717a;font-weight:600;}
+    .powered strong{color:#000;}
 
     /* ── Tabs ─────────────────── */
-    .tabs{display:flex;background:#f4f4f5;border-radius:10px;padding:4px;margin-bottom:24px;}
-    .tab{flex:1;padding:9px;border:none;border-radius:7px;font-family:var(--font);font-size:13px;font-weight:600;color:#6b7280;cursor:pointer;transition:all .2s;background:none;}
-    .tab.active{background:white;color:var(--brand);box-shadow:0 1px 8px rgba(0,0,0,.08);}
+    .tabs{display:flex;background:#f4f4f5;border-radius:12px;padding:4px;margin-bottom:32px;}
+    .tab{flex:1;padding:10px;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;color:#71717a;cursor:pointer;transition:all .3s;background:none;}
+    .tab.active{background:white;color:#000;box-shadow:0 2px 10px rgba(0,0,0,.05);}
 
     /* ── QR Panel ─────────────── */
     #tab-qr{display:flex;flex-direction:column;align-items:center;gap:18px;}
@@ -131,12 +132,15 @@
 </head>
 <body>
 
+<script src="../assets/js/gsap/gsap.min.js"></script>
+<script src="../assets/js/gsap/SplitText.min.js"></script>
+<script src="../assets/js/gsap/CustomEase.min.js"></script>
+
 <div id="loading">
   <div class="spinner"></div>
-  <span style="font-family:var(--font);font-size:14px;color:#6b7280;">Loading secure checkout...</span>
 </div>
 
-<div class="checkout" id="checkout-wrap" style="opacity:0;transition:opacity .4s;">
+<div class="checkout" id="checkout-wrap">
 
   <!-- LEFT -->
   <div class="left">
@@ -286,8 +290,22 @@ window.addEventListener('DOMContentLoaded', async () => {
     paymentData = json.data;
     renderPayment(paymentData);
 
-    document.getElementById('loading').classList.add('done');
-    document.getElementById('checkout-wrap').style.opacity = '1';
+    // GSAP Premium Reveal Animation
+    gsap.registerPlugin(SplitText, CustomEase);
+    CustomEase.create("impact", "M0,0 C0.12,0.85 0.45,1.15 1,1");
+
+    const amountSplit = new SplitText("#amount-val", { type: "chars,words" });
+    const bizSplit = new SplitText("#biz-name", { type: "chars,words" });
+
+    const tl = gsap.timeline();
+    tl.to("#loading", { opacity: 0, duration: 0.5, ease: "power2.inOut", onComplete: () => document.getElementById('loading').style.display = 'none' })
+      .to("#checkout-wrap", { opacity: 1, duration: 0.1 }, "-=0.2")
+      .fromTo(".left", { x: "-100%" }, { x: "0%", duration: 1, ease: "impact" }, "-=0.1")
+      .fromTo(".right", { opacity: 0, x: 50 }, { opacity: 1, x: 0, duration: 1, ease: "power3.out" }, "-=0.7")
+      .fromTo(bizSplit.chars, { opacity: 0, y: 10, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.6, stagger: 0.03, ease: "power2.out" }, "-=0.6")
+      .fromTo(amountSplit.chars, { opacity: 0, y: 30, rotationX: -90 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.8, stagger: 0.05, ease: "impact" }, "-=0.8")
+      .fromTo(".amount-label, .amount-desc, .order-info, .sec-badges", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, "-=0.6")
+      .fromTo(".tabs, .qr-wrap, .app-pills, .qr-help, .timer-bar", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: "power2.out" }, "-=0.8");
 
     startTimer();
     pollInterval = setInterval(checkStatus, 6000);
