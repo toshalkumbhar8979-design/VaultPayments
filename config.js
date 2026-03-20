@@ -9,7 +9,7 @@
  * Example:
  *   window.NEXUSPAY_API_URL = "https://nexuspay-api.railway.app/api/v1";
  */
-window.NEXUSPAY_API_URL = "http://localhost:3000/api/v1";
+window.NEXUSPAY_API_URL = "https://vaultpayments-production.up.railway.app/api/v1";
 
 // Platform branding
 window.NEXUSPAY_BRAND = {
