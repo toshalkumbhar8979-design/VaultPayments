@@ -1,0 +1,20 @@
+# Jekyll Configuration
+# Prevent Jekyll from parsing the backend code and node_modules
+exclude:
+  - backend
+  - sdk
+  - node_modules
+  - package.json
+  - package-lock.json
+  - vendor
+  - .env
+  - "*.db"
+  - rename_script.js
+  - fix_js_paths.js
+  - fix_paths_script.js
+  - fix_equals_script.js
+  - test_signup.js
+  - refactor_async.js
+  - walkthrough.md
+  - task.md
+  - implementation_plan.md
