@@ -374,7 +374,11 @@ async function submitSignup() {
 
     goStep(4);
   } catch (err) {
-    UI.alert(alert, 'error', err.message || 'Registration failed');
+    let msg = err.message || 'Registration failed';
+    if (err.details && Array.isArray(err.details)) {
+      msg = err.details.map(d => d.message).join('. ');
+    }
+    UI.alert(alert, 'error', msg);
     UI.setLoading(btn, false);
   }
 }
