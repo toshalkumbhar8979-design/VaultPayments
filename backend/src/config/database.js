@@ -1,17 +1,17 @@
 'use strict';
 
 /**
- * VaultPay — SQLite Database Layer
- * Uses better-sqlite3 (synchronous, zero-config, production-ready)
- * For high-traffic production: swap to PostgreSQL via pg/Drizzle
+ * NexusPay — SQLite Database Layer
+ * Uses sqlite3 + sqlite (async, production-ready)
  */
 
 const path = require('path');
 const fs   = require('fs');
-const Database = require('better-sqlite3');
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
 const logger = require('../utils/logger');
 
-const DB_PATH = process.env.DB_PATH || './data/vaultpay.db';
+const DB_PATH = process.env.DB_PATH || './data/nexuspay.db';
 
 // Ensure data directory exists
 const dbDir = path.dirname(path.resolve(DB_PATH));
@@ -122,104 +122,114 @@ CREATE TABLE IF NOT EXISTS sms_logs (
 
 // ─── Init ───────────────────────────────────────────────────────────────────
 
-function initDb() {
-  db = new Database(path.resolve(DB_PATH), {
-    verbose: process.env.NODE_ENV === 'development' ? logger.debug.bind(logger) : undefined,
+async function initDb() {
+  db = await open({
+    filename: path.resolve(DB_PATH),
+    driver: sqlite3.Database
   });
 
   // Run schema
-  db.exec(SCHEMA);
+  await db.exec(SCHEMA);
 
   logger.info(`✅ SQLite database ready at ${path.resolve(DB_PATH)}`);
   return db;
 }
 
+// ─── Query Helpers ─────────────────────────────────────────────────────────
+
+function mapParams(data) {
+  const result = {};
+  for (const [k, v] of Object.entries(data)) {
+    result[':' + k] = v;
+  }
+  return result;
+}
+
 // ─── Merchant ───────────────────────────────────────────────────────────────
 
 const merchants = {
-  create(data) {
-    const stmt = getDb().prepare(`
+  async create(data) {
+    await getDb().run(`
       INSERT INTO merchants
         (id,name,email,phone,password_hash,business_name,business_type,website,country,gst_number,
-         brand_color,logo_url,api_key_live_hash,api_key_live_prefix,api_key_test_hash,api_key_test_prefix,
+         brand_color,logo_url,webhook_url,api_key_live_hash,api_key_live_prefix,api_key_test_hash,api_key_test_prefix,
          webhook_secret,status,kyc_verified,created_at,updated_at)
       VALUES
-        (@id,@name,@email,@phone,@password_hash,@business_name,@business_type,@website,@country,@gst_number,
-         @brand_color,@logo_url,@api_key_live_hash,@api_key_live_prefix,@api_key_test_hash,@api_key_test_prefix,
-         @webhook_secret,@status,@kyc_verified,@created_at,@updated_at)
-    `);
-    stmt.run(data);
+        (:id,:name,:email,:phone,:password_hash,:business_name,:business_type,:website,:country,:gst_number,
+         :brand_color,:logo_url,:webhook_url,:api_key_live_hash,:api_key_live_prefix,:api_key_test_hash,:api_key_test_prefix,
+         :webhook_secret,:status,:kyc_verified,:created_at,:updated_at)
+    `, mapParams(data));
     return this.findById(data.id);
   },
 
-  findById(id) {
-    return getDb().prepare('SELECT * FROM merchants WHERE id = ?').get(id) || null;
+  async findById(id) {
+    return (await getDb().get('SELECT * FROM merchants WHERE id = ?', [id])) || null;
   },
 
-  findByEmail(email) {
-    return getDb().prepare('SELECT * FROM merchants WHERE email = ?').get(email.toLowerCase()) || null;
+  async findByEmail(email) {
+    return (await getDb().get('SELECT * FROM merchants WHERE email = ?', [email.toLowerCase()])) || null;
   },
 
-  findByKeyPrefix(prefix) {
-    return getDb().prepare('SELECT * FROM merchants WHERE api_key_live_prefix = ? OR api_key_test_prefix = ?').get(prefix, prefix) || null;
+  async findByKeyPrefix(prefix) {
+    return (await getDb().get('SELECT * FROM merchants WHERE api_key_live_prefix = ? OR api_key_test_prefix = ?', [prefix, prefix])) || null;
   },
 
-  update(id, data) {
+  async update(id, data) {
     data.updated_at = new Date().toISOString();
-    const fields = Object.keys(data).map(k => `${k} = @${k}`).join(', ');
-    getDb().prepare(`UPDATE merchants SET ${fields} WHERE id = @id`).run({ ...data, id });
+    const fields = Object.keys(data).map(k => `${k} = :${k}`).join(', ');
+    await getDb().run(`UPDATE merchants SET ${fields} WHERE id = :id`, mapParams({ ...data, id }));
     return this.findById(id);
   },
 
-  list(limit = 200) {
-    return getDb().prepare('SELECT id,name,email,business_name,status,created_at FROM merchants LIMIT ?').all(limit);
+  async list(limit = 200) {
+    return await getDb().all('SELECT id,name,email,business_name,status,created_at FROM merchants LIMIT ?', [limit]);
   },
 };
 
 // ─── Payments ───────────────────────────────────────────────────────────────
 
 const payments = {
-  create(data) {
+  async create(data) {
     if (typeof data.metadata === 'object') data.metadata = JSON.stringify(data.metadata);
-    const stmt = getDb().prepare(`
+    await getDb().run(`
       INSERT INTO payments
         (id,merchant_id,order_id,amount,currency,status,customer_name,customer_email,customer_phone,
          description,qr_code,payment_method,gateway_fee,net_amount,metadata,callback_url,redirect_url,
          created_at,updated_at,expires_at)
       VALUES
-        (@id,@merchant_id,@order_id,@amount,@currency,@status,@customer_name,@customer_email,@customer_phone,
-         @description,@qr_code,@payment_method,@gateway_fee,@net_amount,@metadata,@callback_url,@redirect_url,
-         @created_at,@updated_at,@expires_at)
-    `);
-    stmt.run(data);
+        (:id,:merchant_id,:order_id,:amount,:currency,:status,:customer_name,:customer_email,:customer_phone,
+         :description,:qr_code,:payment_method,:gateway_fee,:net_amount,:metadata,:callback_url,:redirect_url,
+         :created_at,:updated_at,:expires_at)
+    `, mapParams(data));
     return this.findById(data.id);
   },
 
-  findById(id) {
-    const row = getDb().prepare('SELECT * FROM payments WHERE id = ?').get(id);
+  async findById(id) {
+    const row = await getDb().get('SELECT * FROM payments WHERE id = ?', [id]);
     return row ? { ...row, metadata: safeJsonParse(row.metadata, {}) } : null;
   },
 
-  findByOrderId(orderId, merchantId) {
-    return getDb().prepare('SELECT * FROM payments WHERE order_id = ? AND merchant_id = ?').get(orderId, merchantId) || null;
+  async findByOrderId(orderId, merchantId) {
+    return (await getDb().get('SELECT * FROM payments WHERE order_id = ? AND merchant_id = ?', [orderId, merchantId])) || null;
   },
 
-  update(id, data) {
+  async update(id, data) {
     data.updated_at = new Date().toISOString();
     if (data.metadata && typeof data.metadata === 'object') data.metadata = JSON.stringify(data.metadata);
-    const fields = Object.keys(data).map(k => `${k} = @${k}`).join(', ');
-    getDb().prepare(`UPDATE payments SET ${fields} WHERE id = @id`).run({ ...data, id });
+    const fields = Object.keys(data).map(k => `${k} = :${k}`).join(', ');
+    await getDb().run(`UPDATE payments SET ${fields} WHERE id = :id`, mapParams({ ...data, id }));
     return this.findById(id);
   },
 
-  listByMerchant(merchantId, limit = 100) {
-    return getDb().prepare(
-      'SELECT id,order_id,amount,currency,status,customer_name,customer_email,created_at FROM payments WHERE merchant_id = ? ORDER BY created_at DESC LIMIT ?'
-    ).all(merchantId, limit);
+  async listByMerchant(merchantId, limit = 100) {
+    return await getDb().all(
+      'SELECT id,order_id,amount,currency,status,customer_name,customer_email,created_at FROM payments WHERE merchant_id = ? ORDER BY created_at DESC LIMIT ?',
+      [merchantId, limit]
+    );
   },
 
-  stats(merchantId) {
-    const s = getDb().prepare(`
+  async stats(merchantId) {
+    return await getDb().get(`
       SELECT
         COUNT(*) as total_payments,
         SUM(CASE WHEN status='captured' THEN 1 ELSE 0 END) as captured,
@@ -227,26 +237,25 @@ const payments = {
         SUM(CASE WHEN status='failed' THEN 1 ELSE 0 END) as failed,
         SUM(CASE WHEN status='captured' THEN amount ELSE 0 END) as total_volume
       FROM payments WHERE merchant_id = ?
-    `).get(merchantId);
-    return s;
+    `, [merchantId]);
   },
 };
 
 // ─── Transactions ────────────────────────────────────────────────────────────
 
 const transactions = {
-  create(data) {
-    getDb().prepare(`
+  async create(data) {
+    await getDb().run(`
       INSERT INTO transactions (id,payment_id,merchant_id,type,amount,fee,net_amount,gateway_ref,status,created_at)
-      VALUES (@id,@payment_id,@merchant_id,@type,@amount,@fee,@net_amount,@gateway_ref,@status,@created_at)
-    `).run(data);
+      VALUES (:id,:payment_id,:merchant_id,:type,:amount,:fee,:net_amount,:gateway_ref,:status,:created_at)
+    `, mapParams(data));
     return data;
   },
-  listByMerchant(merchantId, limit = 100) {
-    return getDb().prepare('SELECT * FROM transactions WHERE merchant_id = ? ORDER BY created_at DESC LIMIT ?').all(merchantId, limit);
+  async listByMerchant(merchantId, limit = 100) {
+    return await getDb().all('SELECT * FROM transactions WHERE merchant_id = ? ORDER BY created_at DESC LIMIT ?', [merchantId, limit]);
   },
-  totalFees(merchantId) {
-    const r = getDb().prepare('SELECT SUM(fee) as total FROM transactions WHERE merchant_id = ?').get(merchantId);
+  async totalFees(merchantId) {
+    const r = await getDb().get('SELECT SUM(fee) as total FROM transactions WHERE merchant_id = ?', [merchantId]);
     return r?.total || 0;
   },
 };
@@ -254,11 +263,11 @@ const transactions = {
 // ─── SMS Logs ────────────────────────────────────────────────────────────────
 
 const smsLogs = {
-  create(data) {
-    getDb().prepare(`
+  async create(data) {
+    await getDb().run(`
       INSERT INTO sms_logs (id,merchant_id,sender,sms_text,parsed_amount,parsed_txn_id,parsed_bank,matched_payment_id,action_taken,created_at)
-      VALUES (@id,@merchant_id,@sender,@sms_text,@parsed_amount,@parsed_txn_id,@parsed_bank,@matched_payment_id,@action_taken,@created_at)
-    `).run(data);
+      VALUES (:id,:merchant_id,:sender,:sms_text,:parsed_amount,:parsed_txn_id,:parsed_bank,:matched_payment_id,:action_taken,:created_at)
+    `, mapParams(data));
   },
 };
 

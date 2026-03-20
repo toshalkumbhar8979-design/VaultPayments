@@ -48,7 +48,7 @@ app.use(cors({
     cb(new Error(`CORS blocked: ${origin}`));
   },
   methods:          ['GET','POST','PUT','DELETE','OPTIONS'],
-  allowedHeaders:   ['Content-Type','Authorization','X-VaultPay-Key','X-VaultPay-Signature'],
+  allowedHeaders:   ['Content-Type','Authorization','X-NexusPay-Key','X-NexusPay-Signature'],
   credentials:      true,
   maxAge:           86400,
 }));
@@ -71,7 +71,7 @@ app.use(globalRateLimiter);
 // ─── Health Check ────────────────────────────────────────────────────────────
 app.get('/health', (req, res) => res.json({
   status: 'ok',
-  service: `${process.env.PLATFORM_NAME || 'VaultPay'} API`,
+  service: `${process.env.PLATFORM_NAME || 'NexusPay'} API`,
   version: process.env.API_VERSION || 'v1',
   timestamp: new Date().toISOString(),
   uptime: Math.floor(process.uptime()),
@@ -97,7 +97,7 @@ async function start() {
     logger.info('✅ Database initialized');
 
     app.listen(PORT, () => {
-      logger.info(`🚀 ${process.env.PLATFORM_NAME || 'VaultPay'} API listening on port ${PORT}`);
+      logger.info(`🚀 ${process.env.PLATFORM_NAME || 'NexusPay'} API listening on port ${PORT}`);
       logger.info(`   Environment: ${process.env.NODE_ENV}`);
       logger.info(`   API Base:    ${API_BASE}`);
       logger.info(`   Frontend:    ${process.env.FRONTEND_URL || 'not set'}`);

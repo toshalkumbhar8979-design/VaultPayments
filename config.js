@@ -1,21 +1,21 @@
 /**
- * VaultPay Frontend Configuration
+ * NexusPay Frontend Configuration
  * ================================
- * Edit VAULTPAY_API_URL before deploying the frontend.
+ * Edit NEXUSPAY_API_URL before deploying the frontend.
  *
  * After deploying your backend to Railway/Render/Fly.io,
  * replace the URL below with your actual backend URL.
  *
  * Example:
- *   window.VAULTPAY_API_URL = "https://vaultpay-api.railway.app/api/v1";
+ *   window.NEXUSPAY_API_URL = "https://nexuspay-api.railway.app/api/v1";
  */
-window.VAULTPAY_API_URL = "https://your-backend.railway.app/api/v1";
+window.NEXUSPAY_API_URL = "http://localhost:3000/api/v1";
 
 // Platform branding
-window.VAULTPAY_BRAND = {
-  name: "VaultPay",
+window.NEXUSPAY_BRAND = {
+  name: "NexusPay",
   tagline: "Secure Payment Infrastructure",
-  website: "https://vaultpay.io",
-  support: "support@vaultpay.io",
+  website: "https://nexuspay.io",
+  support: "support@nexuspay.io",
   color: "#5b4fff",
 };

@@ -3,24 +3,24 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Sign In — VaultPay</title>
-  <link rel="stylesheet" href="/assets/css/vp-global.css"/>
+  <title>Sign In — NexusPay</title>
+  <link rel="stylesheet" href="./assets/css/np-global.css"/>
 </head>
 <body>
-<div class="vp-auth-wrap">
-  <div class="vp-auth-card">
+<div class="np-auth-wrap">
+  <div class="np-auth-card">
 
-    <div class="vp-auth-logo">
-      <div class="vp-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
+    <div class="np-auth-logo">
+      <div class="np-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
         <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>
       </div>
-      <span class="vp-nav-logo-text">VaultPay</span>
+      <span class="np-nav-logo-text">NexusPay</span>
     </div>
 
-    <h2 class="vp-auth-title">Welcome back</h2>
-    <p class="vp-auth-sub">Sign in to your merchant dashboard</p>
+    <h2 class="np-auth-title">Welcome back</h2>
+    <p class="np-auth-sub">Sign in to your merchant dashboard</p>
 
-    <div id="alert" class="vp-alert"></div>
+    <div id="alert" class="np-alert"></div>
 
     <form id="login-form" novalidate>
       <div class="form-group">
@@ -36,7 +36,7 @@
       </div>
 
       <div style="display:flex;justify-content:flex-end;margin-top:-8px;margin-bottom:16px;">
-        <a href="/forgot-password.html" style="font-size:13px;color:var(--brand);">Forgot password?</a>
+        <a href="./forgot-password.html" style="font-size:13px;color:var(--brand);">Forgot password?</a>
       </div>
 
       <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-btn">
@@ -45,14 +45,14 @@
     </form>
 
     <p style="text-align:center;font-size:14px;color:var(--muted);margin-top:24px;">
-      New to VaultPay?
-      <a href="/signup.html" style="font-weight:700;">Create free account →</a>
+      New to NexusPay?
+      <a href="./signup.html" style="font-weight:700;">Create free account →</a>
     </p>
   </div>
 </div>
 
-<script src="/config.js"></script>
-<script src="/assets/js/vp-utils.js"></script>
+<script src="./config.js"></script>
+<script src="./assets/js/np-utils.js"></script>
 <script>
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -73,7 +73,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
     // Redirect to intended page or dashboard
     const params = new URLSearchParams(window.location.search);
-    window.location.href = params.get('redirect') || '/dashboard/';
+    window.location.href = params.get('redirect') || './dashboard/index.html';
 
   } catch (err) {
     UI.alert(alertEl, 'error', err.message || 'Invalid email or password');
@@ -88,7 +88,7 @@ function togglePassword() {
 
 // Redirect if already logged in
 if (VP.isLoggedIn) {
-  window.location.href = '/dashboard/';
+  window.location.href = './dashboard/index.html';
 }
 </script>
 </body>

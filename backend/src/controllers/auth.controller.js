@@ -33,7 +33,7 @@ const register = async (req, res) => {
     } = req.body;
 
     // Duplicate check
-    if (merchants.findByEmail(email)) {
+    if (await merchants.findByEmail(email)) {
       return sendError(res, 409, 'An account with this email already exists', 'DUPLICATE_EMAIL');
     }
 
@@ -43,7 +43,7 @@ const register = async (req, res) => {
     const webhookSecret = crypto.randomBytes(32).toString('hex');
     const now = new Date().toISOString();
 
-    const merchant = merchants.create({
+    const merchant = await merchants.create({
       id:                   uuidv4(),
       name:                 name.trim(),
       email:                email.toLowerCase().trim(),
@@ -90,7 +90,7 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const merchant = merchants.findByEmail(email.toLowerCase().trim());
+    const merchant = await merchants.findByEmail(email.toLowerCase().trim());
 
     // Same message for both cases to prevent user enumeration
     const invalid = () => sendError(res, 401, 'Invalid email or password', 'INVALID_CREDENTIALS');
@@ -136,7 +136,7 @@ const rotateKeys = async (req, res) => {
       updates._new_test = key;
     }
 
-    merchants.update(merchantId, {
+    await merchants.update(merchantId, {
       ...(updates.api_key_live_hash   && { api_key_live_hash:   updates.api_key_live_hash }),
       ...(updates.api_key_live_prefix && { api_key_live_prefix: updates.api_key_live_prefix }),
       ...(updates.api_key_test_hash   && { api_key_test_hash:   updates.api_key_test_hash }),

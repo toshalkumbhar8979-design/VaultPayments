@@ -16,7 +16,7 @@ const getTransport = () => {
 
 const sendPaymentConfirmation = async ({
   to, customerName, merchantName, paymentId, orderId,
-  amount, currency, description, capturedAt, brandColor = '#5b4fff', platformName = 'VaultPay',
+  amount, currency, description, capturedAt, brandColor = '#5b4fff', platformName = 'NexusPay',
 }) => {
   const cfg = CURRENCIES[currency] || CURRENCIES.INR;
   const amtFmt  = `${cfg.symbol}${(amount / cfg.multiplier).toFixed(2)}`;
@@ -50,7 +50,7 @@ const sendPaymentConfirmation = async ({
 </table></td></tr></table></body></html>`;
 
   const info = await getTransport().sendMail({
-    from:    `"${process.env.FROM_NAME || platformName}" <${process.env.FROM_EMAIL || 'noreply@vaultpay.io'}>`,
+    from:    `"${process.env.FROM_NAME || platformName}" <${process.env.FROM_EMAIL || 'noreply@nexuspay.io'}>`,
     to,
     subject: `✅ Payment Confirmed — ${amtFmt} to ${merchantName}`,
     html,

@@ -9,14 +9,14 @@ const logger         = require('../utils/logger');
 /**
  * JWT auth — for merchant dashboard routes
  */
-const authenticateJWT = (req, res, next) => {
+const authenticateJWT = async (req, res, next) => {
   try {
     const auth = req.headers['authorization'] || '';
     if (!auth.startsWith('Bearer ')) {
       return sendError(res, 401, 'Authorization token required', 'UNAUTHORIZED');
     }
     const decoded  = jwt.verify(auth.slice(7), process.env.JWT_SECRET, { algorithms: ['HS256'] });
-    const merchant = merchants.findById(decoded.merchantId);
+    const merchant = await merchants.findById(decoded.merchantId);
     if (!merchant) return sendError(res, 401, 'Account not found', 'UNAUTHORIZED');
     if (merchant.status !== 'active') return sendError(res, 403, 'Account suspended', 'FORBIDDEN');
     req.merchant   = merchant;
@@ -35,14 +35,14 @@ const authenticateJWT = (req, res, next) => {
  */
 const authenticateApiKey = async (req, res, next) => {
   try {
-    const apiKey = req.headers['x-vaultpay-key'] || (req.headers['authorization'] || '').replace('Bearer ', '');
-    if (!apiKey) return sendError(res, 401, 'API key required. Use X-VaultPay-Key header.', 'UNAUTHORIZED');
+    const apiKey = req.headers['x-nexuspay-key'] || (req.headers['authorization'] || '').replace('Bearer ', '');
+    if (!apiKey) return sendError(res, 401, 'API key required. Use X-NexusPay-Key header.', 'UNAUTHORIZED');
     if (!/^vp_(live|test)_[a-f0-9]{32}$/.test(apiKey)) {
       return sendError(res, 401, 'Invalid API key format', 'UNAUTHORIZED');
     }
 
     const prefix   = apiKey.substring(0, 16);
-    const merchant = merchants.findByKeyPrefix(prefix);
+    const merchant = await merchants.findByKeyPrefix(prefix);
     if (!merchant) return sendError(res, 401, 'Invalid API key', 'UNAUTHORIZED');
     if (merchant.status !== 'active') return sendError(res, 403, 'Account suspended', 'FORBIDDEN');
 
@@ -69,7 +69,7 @@ const authenticateApiKey = async (req, res, next) => {
  */
 const verifyWebhookSignature = (req, res, next) => {
   try {
-    const sig     = req.headers['x-vaultpay-signature'] || '';
+    const sig     = req.headers['x-nexuspay-signature'] || '';
     const payload = req.body; // raw Buffer (set by express.raw in server.js)
     const expected = 'sha256=' + crypto.createHmac('sha256', process.env.WEBHOOK_SECRET)
       .update(payload).digest('hex');

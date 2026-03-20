@@ -1,33 +1,33 @@
 <?php
 /**
- * VaultPay PHP SDK — Usage Examples
+ * NexusPay PHP SDK — Usage Examples
  *
  * Run: php examples.php
- * (Requires VaultPay backend running at localhost:5000)
+ * (Requires NexusPay backend running at localhost:5000)
  */
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/VaultPay.php';
+require_once __DIR__ . '/NexusPay.php';
 
-use VaultPay\Client;
-use VaultPay\VaultPayException;
+use NexusPay\Client;
+use NexusPay\NexusPayException;
 
-$apiKey  = getenv('VAULTPAY_API_KEY') ?: 'vp_test_00000000000000000000000000000000';
-$baseUrl = getenv('VAULTPAY_BASE_URL') ?: 'http://localhost:5000/api/v1';
+$apiKey  = getenv('NEXUSPAY_API_KEY') ?: 'vp_test_00000000000000000000000000000000';
+$baseUrl = getenv('NEXUSPAY_BASE_URL') ?: 'http://localhost:5000/api/v1';
 
-echo "\n🔑 VaultPay PHP SDK Examples\n";
+echo "\n🔑 NexusPay PHP SDK Examples\n";
 echo "   Key: " . substr($apiKey, 0, 16) . "...\n";
 echo "   URL: $baseUrl\n\n";
 
 // ── Init client ───────────────────────────────────────────────
 $vp = new Client($apiKey, $baseUrl);
-echo "   Mode: " . ($vp->isLiveMode() ? '🟢 LIVE' : '🟡 TEST') . "\n\n";
+echo "   Mode: " . ($np->isLiveMode() ? '🟢 LIVE' : '🟡 TEST') . "\n\n";
 
 // ── Example 1: Create payment ─────────────────────────────────
 echo "▶ Creating payment...\n";
 try {
-    $payment = $vp->payments->create([
+    $payment = $np->payments->create([
         'order_id'     => 'PHP-' . time(),
         'amount'       => 49900,
         'currency'     => 'INR',
@@ -49,12 +49,12 @@ try {
 
     // ── Example 2: Fetch payment ──────────────────────────────
     echo "▶ Fetching payment...\n";
-    $fetched = $vp->payments->fetch($paymentId);
+    $fetched = $np->payments->fetch($paymentId);
     echo "  ✅ Status: {$fetched['status']}\n\n";
 
     // ── Example 3: Parse SMS ──────────────────────────────────
     echo "▶ Parsing bank SMS...\n";
-    $smsResult = $vp->sms->parse(
+    $smsResult = $np->sms->parse(
         "Your a/c XXXX1234 is credited INR 499.00 by UPI. Ref No: 312456789012. -HDFC Bank",
         $paymentId
     );
@@ -64,12 +64,12 @@ try {
 
     // ── Example 4: Generate QR ────────────────────────────────
     echo "▶ Generating QR code...\n";
-    $qrUri = $vp->qr->generate("upi://pay?pa=test@upi&am=499&cu=INR");
+    $qrUri = $np->qr->generate("upi://pay?pa=test@upi&am=499&cu=INR");
     echo "  ✅ QR generated: " . strlen($qrUri) . " bytes\n\n";
 
     echo "✅ All PHP examples passed!\n\n";
 
-} catch (VaultPayException $e) {
+} catch (NexusPayException $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo "   Code: "   . $e->getErrorCode() . "\n";
     echo "   HTTP: "   . $e->getStatusCode() . "\n";
@@ -91,14 +91,14 @@ echo "  ✅ Invalid signature: " . ($invalid ? 'true' : 'false') . "\n\n";
 echo "▶ Webhook handler template:\n\n";
 echo <<<'CODE'
 <?php
-// webhook.php — POST endpoint for VaultPay events
+// webhook.php — POST endpoint for NexusPay events
 
-require_once 'VaultPay.php';
-use VaultPay\Client;
+require_once 'NexusPay.php';
+use NexusPay\Client;
 
 $rawBody  = file_get_contents('php://input');
-$signature = $_SERVER['HTTP_X_VAULTPAY_SIGNATURE'] ?? '';
-$secret   = getenv('VAULTPAY_WEBHOOK_SECRET');
+$signature = $_SERVER['HTTP_X_NEXUSPAY_SIGNATURE'] ?? '';
+$secret   = getenv('NEXUSPAY_WEBHOOK_SECRET');
 
 // ALWAYS verify before processing
 if (!Client::verifyWebhookSignature($rawBody, $signature, $secret)) {

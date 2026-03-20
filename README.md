@@ -1,4 +1,4 @@
-# ⚡ VaultPay — Complete Payment Gateway Platform
+# ⚡ NexusPay — Complete Payment Gateway Platform
 
 The developer-first payment gateway. QR codes, UPI, SMS acknowledgement, white-label checkout, 3 SDKs.
 
@@ -16,8 +16,8 @@ node server.js
 ### 2. Configure Frontend
 Edit `config.js` in the root directory:
 ```javascript
-window.VAULTPAY_API_URL = "https://your-backend.railway.app/api/v1";
-window.VAULTPAY_BRAND   = { name: "YourPlatformName", color: "#5b4fff" };
+window.NEXUSPAY_API_URL = "https://your-backend.railway.app/api/v1";
+window.NEXUSPAY_BRAND   = { name: "YourPlatformName", color: "#5b4fff" };
 ```
 
 ### 3. Deploy Frontend

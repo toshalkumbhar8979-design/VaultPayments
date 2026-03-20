@@ -1,4 +1,4 @@
-# VaultPay — Cloudflare Pages Routing
+# NexusPay — Cloudflare Pages Routing
 # This file handles SPA routing so all deep links work
 
 # Dashboard SPA - any /dashboard/* goes to dashboard/index.html

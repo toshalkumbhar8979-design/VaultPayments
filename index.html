@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>VaultPay — Developer-First Payment Gateway</title>
+  <title>NexusPay — Developer-First Payment Gateway</title>
   <meta name="description" content="Accept payments in minutes. QR codes, UPI, SMS verification, white-label checkout. Built for Indian developers."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -132,19 +132,19 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">
+  <a href="./" class="nav-logo">
     <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.5"/></svg></div>
-    <span class="nav-logo-text">VaultPay</span>
+    <span class="nav-logo-text">NexusPay</span>
   </a>
   <ul class="nav-links">
     <li><a href="#features">Features</a></li>
     <li><a href="#integrate">Integrate</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="/docs/">Docs</a></li>
+    <li><a href="./docs/">Docs</a></li>
   </ul>
   <div class="nav-cta">
-    <a href="/login.html" class="btn-nav-ghost">Sign In</a>
-    <a href="/signup.html" class="btn-nav-primary">Get Started Free →</a>
+    <a href="./login.html" class="btn-nav-ghost">Sign In</a>
+    <a href="./signup.html" class="btn-nav-primary">Get Started Free →</a>
   </div>
 </nav>
 
@@ -157,7 +157,7 @@
     <h1>The <span class="serif">smartest</span> way<br/>to accept payments</h1>
     <p class="hero-sub">QR codes, UPI, bank SMS acknowledgement — all in one API. Go live in 5 minutes, not 5 weeks.</p>
     <div class="hero-btns">
-      <a href="/signup.html" class="btn-hero btn-hero-primary">
+      <a href="./signup.html" class="btn-hero btn-hero-primary">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Start Free — No Setup Fee
       </a>
@@ -180,7 +180,7 @@
     <p class="section-sub">Production-grade payment infrastructure that scales with your business.</p></div>
     <div class="features">
       <div class="feat-card reveal d1"><div class="feat-icon" style="background:rgba(91,79,255,.12);">📱</div><h3>Smart QR Payments</h3><p>Generate UPI-compatible QR codes dynamically per cart amount. Works with PhonePe, GPay, Paytm, BHIM and every UPI app.</p></div>
-      <div class="feat-card reveal d2"><div class="feat-icon" style="background:rgba(0,229,192,.12);">💬</div><h3>SMS Acknowledgement</h3><p>Customers paste their bank SMS. VaultPay auto-parses the amount and transaction ID to confirm payment instantly.</p></div>
+      <div class="feat-card reveal d2"><div class="feat-icon" style="background:rgba(0,229,192,.12);">💬</div><h3>SMS Acknowledgement</h3><p>Customers paste their bank SMS. NexusPay auto-parses the amount and transaction ID to confirm payment instantly.</p></div>
       <div class="feat-card reveal d3"><div class="feat-icon" style="background:rgba(255,79,155,.12);">✉️</div><h3>Instant Email Receipts</h3><p>Beautiful, branded receipts emailed automatically to customers. Customized with your business name and brand colors.</p></div>
       <div class="feat-card reveal d1"><div class="feat-icon" style="background:rgba(251,191,36,.12);">🎨</div><h3>White-Label Checkout</h3><p>The checkout page auto-adapts to your brand. Your logo, your colors, your business name. One small "Powered by" badge.</p></div>
       <div class="feat-card reveal d2"><div class="feat-icon" style="background:rgba(91,79,255,.12);">🔐</div><h3>Bank-Grade Security</h3><p>AES-256-GCM encryption, HMAC-SHA256 webhooks, bcrypt passwords, rate limiting, OWASP-compliant API.</p></div>
@@ -221,10 +221,10 @@
             <span class="code-file">checkout.js</span>
           </div>
           <div class="code-body"><pre><span class="cc">// npm install  (zero extra deps)</span>
-<span class="ck">const</span> <span class="cv">VaultPay</span> = <span class="cm">require</span>(<span class="cs">'./sdk/vaultpay'</span>);
+<span class="ck">const</span> <span class="cv">NexusPay</span> = <span class="cm">require</span>(<span class="cs">'./sdk/nexuspay'</span>);
 
 <span class="cc">// Initialize with your API key</span>
-<span class="ck">const</span> <span class="cv">vp</span> = <span class="ck">new</span> <span class="cv">VaultPay</span>(<span class="cs">'vp_live_...'</span>);
+<span class="ck">const</span> <span class="cv">vp</span> = <span class="ck">new</span> <span class="cv">NexusPay</span>(<span class="cs">'vp_live_...'</span>);
 
 <span class="cc">// Create a payment (10 lines!)</span>
 <span class="ck">const</span> <span class="cv">payment</span> = <span class="ck">await</span> <span class="cv">vp</span>.<span class="cp">payments</span>.<span class="cm">create</span>({
@@ -269,7 +269,7 @@
           <li>Webhook notifications</li>
           <li>Test mode included</li>
         </ul>
-        <a href="/signup.html" class="btn-price outline">Get Started Free</a>
+        <a href="./signup.html" class="btn-price outline">Get Started Free</a>
       </div>
       <div class="price-card featured">
         <div class="price-tier">Growth</div>
@@ -285,7 +285,7 @@
           <li>Refund management</li>
           <li>Analytics dashboard</li>
         </ul>
-        <a href="/signup.html" class="btn-price filled">Start Growth Plan</a>
+        <a href="./signup.html" class="btn-price filled">Start Growth Plan</a>
       </div>
       <div class="price-card">
         <div class="price-tier">Enterprise</div>
@@ -300,7 +300,7 @@
           <li>On-premise deployment</li>
           <li>24/7 phone support</li>
         </ul>
-        <a href="mailto:sales@vaultpay.io" class="btn-price outline">Contact Sales</a>
+        <a href="mailto:sales@nexuspay.io" class="btn-price outline">Contact Sales</a>
       </div>
     </div>
   </div>
@@ -314,8 +314,8 @@
     <h2>Accept your first payment<br/><em>in under 10 minutes.</em></h2>
     <p style="color:var(--muted);font-size:17px;margin-bottom:36px;">Free forever on Starter. No credit card required.</p>
     <div class="hero-btns">
-      <a href="/signup.html" class="btn-hero btn-hero-primary">Create Free Account →</a>
-      <a href="/dashboard/" class="btn-hero btn-hero-outline">View Dashboard</a>
+      <a href="./signup.html" class="btn-hero btn-hero-primary">Create Free Account →</a>
+      <a href="./dashboard/" class="btn-hero btn-hero-outline">View Dashboard</a>
     </div>
   </div>
 </section>
@@ -324,28 +324,28 @@
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
-      <a href="/" class="nav-logo" style="margin-bottom:0;">
+      <a href="./" class="nav-logo" style="margin-bottom:0;">
         <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/></svg></div>
-        <span class="nav-logo-text">VaultPay</span>
+        <span class="nav-logo-text">NexusPay</span>
       </a>
       <p>The developer-first payment gateway for modern Indian businesses. Fast, secure, and ridiculously easy to integrate.</p>
     </div>
     <div class="footer-col">
       <h4>Product</h4>
-      <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="/docs/">API Docs</a></li><li><a href="/dashboard/">Dashboard</a></li></ul>
+      <ul><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="./docs/">API Docs</a></li><li><a href="./dashboard/">Dashboard</a></li></ul>
     </div>
     <div class="footer-col">
       <h4>Developers</h4>
-      <ul><li><a href="/docs/">API Reference</a></li><li><a href="/sdk/node/vaultpay.js">Node.js SDK</a></li><li><a href="/sdk/python/vaultpay.py">Python SDK</a></li><li><a href="/sdk/php/VaultPay.php">PHP SDK</a></li></ul>
+      <ul><li><a href="./docs/">API Reference</a></li><li><a href="./sdk/node/nexuspay.js">Node.js SDK</a></li><li><a href="./sdk/python/nexuspay.py">Python SDK</a></li><li><a href="./sdk/php/NexusPay.php">PHP SDK</a></li></ul>
     </div>
     <div class="footer-col">
       <h4>Company</h4>
-      <ul><li><a href="/signup.html">Get Started</a></li><li><a href="mailto:support@vaultpay.io">Support</a></li><li><a href="mailto:sales@vaultpay.io">Sales</a></li></ul>
+      <ul><li><a href="./signup.html">Get Started</a></li><li><a href="mailto:support@nexuspay.io">Support</a></li><li><a href="mailto:sales@nexuspay.io">Sales</a></li></ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span>© 2025 <strong>VaultPay Technologies Pvt. Ltd.</strong> Made with ♥ in India 🇮🇳</span>
-    <span style="font-size:12px;">Build on top of VaultPay — your customers, your brand.</span>
+    <span>© 2025 <strong>NexusPay Technologies Pvt. Ltd.</strong> Made with ♥ in India 🇮🇳</span>
+    <span style="font-size:12px;">Build on top of NexusPay — your customers, your brand.</span>
   </div>
 </footer>
 

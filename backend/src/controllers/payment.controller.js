@@ -29,7 +29,7 @@ const createPayment = async (req, res) => {
     if (amount > maxAmount) return sendError(res, 400, `Maximum amount exceeded`, 'INVALID_AMOUNT');
 
     // Duplicate order check
-    if (payments.findByOrderId(order_id, merchantId)) {
+    if (await payments.findByOrderId(order_id, merchantId)) {
       return sendError(res, 409, `Payment for order_id '${order_id}' already exists`, 'DUPLICATE_ORDER');
     }
 
@@ -47,7 +47,7 @@ const createPayment = async (req, res) => {
       description,
     });
 
-    const payment = payments.create({
+    const payment = await payments.create({
       id:             paymentId,
       merchant_id:    merchantId,
       order_id,
@@ -97,20 +97,20 @@ const createPayment = async (req, res) => {
 };
 
 // GET /payments/checkout/:id (public — no auth)
-const getCheckoutData = (req, res) => {
+const getCheckoutData = async (req, res) => {
   try {
-    const payment = payments.findById(req.params.payment_id);
+    const payment = await payments.findById(req.params.payment_id);
     if (!payment) return sendError(res, 404, 'Payment not found', 'PAYMENT_NOT_FOUND');
 
     if (new Date(payment.expires_at) < new Date()) {
-      payments.update(payment.id, { status: PAYMENT_STATUS.EXPIRED });
+      await payments.update(payment.id, { status: PAYMENT_STATUS.EXPIRED });
       return sendError(res, 410, 'Payment link has expired', 'PAYMENT_EXPIRED');
     }
     if (payment.status === PAYMENT_STATUS.CAPTURED) {
       return sendError(res, 409, 'Payment already completed', 'PAYMENT_ALREADY_CAPTURED');
     }
 
-    const merchant = merchants.findById(payment.merchant_id);
+    const merchant = await merchants.findById(payment.merchant_id);
     const currency = CURRENCIES[payment.currency] || CURRENCIES.INR;
 
     return sendSuccess(res, 200, 'Checkout data', {
@@ -142,8 +142,8 @@ const getCheckoutData = (req, res) => {
 };
 
 // GET /payments/:id
-const getPayment = (req, res) => {
-  const payment = payments.findById(req.params.payment_id);
+const getPayment = async (req, res) => {
+  const payment = await payments.findById(req.params.payment_id);
   if (!payment || payment.merchant_id !== req.merchantId) {
     return sendError(res, 404, 'Payment not found', 'PAYMENT_NOT_FOUND');
   }
@@ -155,16 +155,16 @@ const getPayment = (req, res) => {
 };
 
 // GET /payments
-const listPayments = (req, res) => {
+const listPayments = async (req, res) => {
   const limit = Math.min(parseInt(req.query.limit) || 50, 100);
-  const list  = payments.listByMerchant(req.merchantId, limit);
+  const list  = await payments.listByMerchant(req.merchantId, limit);
   return sendSuccess(res, 200, 'Payments', { payments: list, count: list.length });
 };
 
 // POST /payments/:id/capture
 const capturePayment = async (req, res) => {
   try {
-    const payment = payments.findById(req.params.payment_id);
+    const payment = await payments.findById(req.params.payment_id);
     if (!payment || payment.merchant_id !== req.merchantId) {
       return sendError(res, 404, 'Payment not found');
     }
@@ -179,10 +179,10 @@ const capturePayment = async (req, res) => {
     }
 
     const capturedAt = new Date().toISOString();
-    const updated = payments.update(payment.id, { status: PAYMENT_STATUS.CAPTURED, captured_at: capturedAt });
+    const updated = await payments.update(payment.id, { status: PAYMENT_STATUS.CAPTURED, captured_at: capturedAt });
 
     // Record transaction
-    transactions.create({
+    await transactions.create({
       id:          `txn_${uuidv4().replace(/-/g,'').substring(0,20)}`,
       payment_id:  payment.id,
       merchant_id: req.merchantId,
@@ -207,7 +207,7 @@ const capturePayment = async (req, res) => {
       description:  payment.description,
       capturedAt,
       brandColor:   req.merchant.brand_color,
-      platformName: process.env.PLATFORM_NAME || 'VaultPay',
+      platformName: process.env.PLATFORM_NAME || 'NexusPay',
     }).catch(err => logger.warn('Email failed:', err.message));
 
     // Fire webhook
@@ -232,7 +232,7 @@ const capturePayment = async (req, res) => {
 
 // POST /payments/:id/refund
 const refundPayment = async (req, res) => {
-  const payment = payments.findById(req.params.payment_id);
+  const payment = await payments.findById(req.params.payment_id);
   if (!payment || payment.merchant_id !== req.merchantId) {
     return sendError(res, 404, 'Payment not found');
   }
@@ -240,7 +240,7 @@ const refundPayment = async (req, res) => {
     return sendError(res, 400, 'Only captured payments can be refunded');
   }
   const refundedAt = new Date().toISOString();
-  payments.update(payment.id, { status: PAYMENT_STATUS.REFUNDED, refunded_at: refundedAt });
+  await payments.update(payment.id, { status: PAYMENT_STATUS.REFUNDED, refunded_at: refundedAt });
   logger.info(`Refund: ${payment.id}`);
   return sendSuccess(res, 200, 'Refund initiated', { payment_id: payment.id, status: 'refunded', refunded_at: refundedAt });
 };
@@ -252,9 +252,9 @@ async function fireWebhook(merchant, event, data) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-VaultPay-Signature': sig,
-      'X-VaultPay-Event': event,
-      'User-Agent': `${process.env.PLATFORM_NAME || 'VaultPay'}-Webhook/1.0`,
+      'X-NexusPay-Signature': sig,
+      'X-NexusPay-Event': event,
+      'User-Agent': `${process.env.PLATFORM_NAME || 'NexusPay'}-Webhook/1.0`,
     },
     body: payload,
     signal: AbortSignal.timeout(10000),

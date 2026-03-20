@@ -1,17 +1,17 @@
 <?php
 /**
  * ╔══════════════════════════════════════════════════╗
- * ║         VaultPay PHP SDK v1.0                    ║
+ * ║         NexusPay PHP SDK v1.0                    ║
  * ║   Secure Payment Gateway for PHP Developers      ║
  * ╚══════════════════════════════════════════════════╝
  *
  * Requirements: PHP 7.4+, cURL extension
  *
  * Usage:
- *   require_once 'VaultPay.php';
- *   $vp = new VaultPay\Client('vp_live_YOUR_API_KEY');
+ *   require_once 'NexusPay.php';
+ *   $vp = new NexusPay\Client('vp_live_YOUR_API_KEY');
  *
- *   $payment = $vp->payments->create([
+ *   $payment = $np->payments->create([
  *       'order_id'  => 'ORD-001',
  *       'amount'    => 49900,
  *       'currency'  => 'INR',
@@ -28,11 +28,11 @@
 
 declare(strict_types=1);
 
-namespace VaultPay;
+namespace NexusPay;
 
 // ─── Exceptions ───────────────────────────────────────────────────────────────
 
-class VaultPayException extends \RuntimeException
+class NexusPayException extends \RuntimeException
 {
     private string $errorCode;
     private int    $statusCode;
@@ -55,10 +55,10 @@ class VaultPayException extends \RuntimeException
     public function getRaw(): mixed        { return $this->raw; }
 }
 
-class AuthException        extends VaultPayException {}
-class ValidationException  extends VaultPayException {}
-class NotFoundException    extends VaultPayException {}
-class NetworkException     extends VaultPayException {}
+class AuthException        extends NexusPayException {}
+class ValidationException  extends NexusPayException {}
+class NotFoundException    extends NexusPayException {}
+class NetworkException     extends NexusPayException {}
 
 // ─── Main Client ──────────────────────────────────────────────────────────────
 
@@ -76,21 +76,21 @@ class Client
     public SMSResource      $sms;
 
     /**
-     * @param string $apiKey  Your VaultPay key (vp_live_... or vp_test_...)
+     * @param string $apiKey  Your NexusPay key (vp_live_... or vp_test_...)
      * @param string $baseUrl Override API base URL (optional)
      * @param int    $timeout Request timeout in seconds (default 30)
-     * @throws VaultPayException
+     * @throws NexusPayException
      */
     public function __construct(
         string $apiKey,
-        string $baseUrl = 'https://api.vaultpay.io/api/v1',
+        string $baseUrl = 'https://api.nexuspay.io/api/v1',
         int    $timeout = 30
     ) {
         if (empty($apiKey)) {
-            throw new VaultPayException('api_key is required', 'MISSING_API_KEY');
+            throw new NexusPayException('api_key is required', 'MISSING_API_KEY');
         }
         if (!preg_match('/^vp_(live|test)_[a-f0-9]{32}$/', $apiKey)) {
-            throw new VaultPayException(
+            throw new NexusPayException(
                 'Invalid API key format. Expected: vp_live_... or vp_test_...',
                 'INVALID_API_KEY_FORMAT'
             );
@@ -110,13 +110,13 @@ class Client
     public function isTestMode(): bool { return !$this->isLive; }
 
     /**
-     * Make an authenticated HTTP request to the VaultPay API.
+     * Make an authenticated HTTP request to the NexusPay API.
      *
      * @param  string     $method  GET | POST | PUT | DELETE
      * @param  string     $path    API path, e.g. '/payments/create'
      * @param  array|null $body    Request body (will be JSON-encoded)
      * @return array               Parsed 'data' from API response
-     * @throws VaultPayException
+     * @throws NexusPayException
      */
     public function request(string $method, string $path, ?array $body = null): array
     {
@@ -135,9 +135,9 @@ class Client
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
                 'Accept: application/json',
-                'X-VaultPay-Key: ' . $this->apiKey,
-                'X-VaultPay-SDK: php/' . self::SDK_VERSION,
-                'User-Agent: VaultPay-SDK-PHP/' . self::SDK_VERSION,
+                'X-NexusPay-Key: ' . $this->apiKey,
+                'X-NexusPay-SDK: php/' . self::SDK_VERSION,
+                'User-Agent: NexusPay-SDK-PHP/' . self::SDK_VERSION,
             ],
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2,
@@ -158,7 +158,7 @@ class Client
 
         $parsed = json_decode($rawResponse, true);
         if ($parsed === null) {
-            throw new VaultPayException(
+            throw new NexusPayException(
                 'Failed to parse API response',
                 'PARSE_ERROR',
                 $httpCode,
@@ -175,7 +175,7 @@ class Client
                 $httpCode === 401                        => throw new AuthException($msg, $code, $httpCode, $parsed),
                 $httpCode === 400 || $httpCode === 422   => throw new ValidationException($msg, $code, $httpCode, $parsed),
                 $httpCode === 404                        => throw new NotFoundException($msg, $code, $httpCode, $parsed),
-                default                                  => throw new VaultPayException($msg, $code, $httpCode, $parsed),
+                default                                  => throw new NexusPayException($msg, $code, $httpCode, $parsed),
             };
         }
 
@@ -183,18 +183,18 @@ class Client
     }
 
     /**
-     * Verify a VaultPay webhook signature (HMAC-SHA256).
+     * Verify a NexusPay webhook signature (HMAC-SHA256).
      *
      * ALWAYS call this before processing webhook data.
      *
      * @param  string $rawBody   Raw POST body string
-     * @param  string $signature X-VaultPay-Signature header value
+     * @param  string $signature X-NexusPay-Signature header value
      * @param  string $secret    Your webhook secret key
      * @return bool
      *
      * @example
      *   $body = file_get_contents('php://input');
-     *   $sig  = $_SERVER['HTTP_X_VAULTPAY_SIGNATURE'] ?? '';
+     *   $sig  = $_SERVER['HTTP_X_NEXUSPAY_SIGNATURE'] ?? '';
      *   if (!Client::verifyWebhookSignature($body, $sig, WEBHOOK_SECRET)) {
      *       http_response_code(401); exit;
      *   }
@@ -226,7 +226,7 @@ class PaymentsResource
      * @return array         Payment data including payment_id, qr_code, gateway_url
      *
      * @example
-     *   $payment = $vp->payments->create([
+     *   $payment = $np->payments->create([
      *       'order_id'     => 'ORD-001',
      *       'amount'       => 49900,      // Rs 499 in paise
      *       'currency'     => 'INR',
@@ -239,13 +239,13 @@ class PaymentsResource
     public function create(array $params): array
     {
         if (empty($params['order_id'])) {
-            throw new VaultPayException('order_id is required', 'MISSING_PARAM');
+            throw new NexusPayException('order_id is required', 'MISSING_PARAM');
         }
         if (empty($params['amount']) || (int)$params['amount'] < 100) {
-            throw new VaultPayException('amount must be >= 100 paise', 'INVALID_AMOUNT');
+            throw new NexusPayException('amount must be >= 100 paise', 'INVALID_AMOUNT');
         }
         if (empty($params['customer']['email'])) {
-            throw new VaultPayException('customer.email is required', 'MISSING_PARAM');
+            throw new NexusPayException('customer.email is required', 'MISSING_PARAM');
         }
         // Defaults
         $params['currency']       ??= 'INR';
@@ -265,7 +265,7 @@ class PaymentsResource
     public function fetch(string $paymentId): array
     {
         if (empty($paymentId)) {
-            throw new VaultPayException('paymentId is required', 'MISSING_PARAM');
+            throw new NexusPayException('paymentId is required', 'MISSING_PARAM');
         }
         return $this->client->request('GET', "/payments/$paymentId");
     }
@@ -330,7 +330,7 @@ class QRResource
      * @return string             Base64 data URI: 'data:image/png;base64,...'
      *
      * @example
-     *   $qrUri = $vp->qr->generate('upi://pay?pa=merchant@upi&am=500');
+     *   $qrUri = $np->qr->generate('upi://pay?pa=merchant@upi&am=500');
      *   // Show in HTML:
      *   echo "<img src='$qrUri' />";
      */
@@ -340,7 +340,7 @@ class QRResource
         string $darkColor = '#000000'
     ): string {
         if (empty($text)) {
-            throw new VaultPayException('text is required', 'MISSING_PARAM');
+            throw new NexusPayException('text is required', 'MISSING_PARAM');
         }
         $result = $this->client->request('POST', '/qr/generate', [
             'text'       => $text,
@@ -367,7 +367,7 @@ class SMSResource
      * @return array       ['parsed' => [...], 'action_taken' => '...']
      *
      * @example (Laravel Controller)
-     *   $result = $vp->sms->parse(
+     *   $result = $np->sms->parse(
      *       $request->input('sms'),
      *       $request->input('payment_id')
      *   );
@@ -378,7 +378,7 @@ class SMSResource
     public function parse(string $smsText, ?string $paymentId = null): array
     {
         if (empty(trim($smsText)) || strlen($smsText) < 10) {
-            throw new VaultPayException('smsText must be at least 10 characters', 'MISSING_PARAM');
+            throw new NexusPayException('smsText must be at least 10 characters', 'MISSING_PARAM');
         }
         $body = ['sms' => trim($smsText)];
         if ($paymentId !== null) $body['payment_id'] = $paymentId;
@@ -392,19 +392,19 @@ class SMSResource
 /*
  * To use with Laravel, add to config/services.php:
  *
- *   'vaultpay' => [
- *       'key'      => env('VAULTPAY_API_KEY'),
- *       'base_url' => env('VAULTPAY_BASE_URL', 'https://api.vaultpay.io/api/v1'),
+ *   'nexuspay' => [
+ *       'key'      => env('NEXUSPAY_API_KEY'),
+ *       'base_url' => env('NEXUSPAY_BASE_URL', 'https://api.nexuspay.io/api/v1'),
  *   ],
  *
  * Then in AppServiceProvider::register():
- *   $this->app->singleton(\VaultPay\Client::class, function ($app) {
- *       return new \VaultPay\Client(
- *           config('services.vaultpay.key'),
- *           config('services.vaultpay.base_url'),
+ *   $this->app->singleton(\NexusPay\Client::class, function ($app) {
+ *       return new \NexusPay\Client(
+ *           config('services.nexuspay.key'),
+ *           config('services.nexuspay.base_url'),
  *       );
  *   });
  *
  * Inject in controllers:
- *   public function checkout(\VaultPay\Client $vp, Request $request) { ... }
+ *   public function checkout(\NexusPay\Client $vp, Request $request) { ... }
  */

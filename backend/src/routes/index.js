@@ -1,6 +1,6 @@
 'use strict';
 /**
- * VaultPay — All API Routes
+ * NexusPay — All API Routes
  */
 
 const express = require('express');

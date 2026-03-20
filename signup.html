@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>Create Account — VaultPay</title>
-  <link rel="stylesheet" href="/assets/css/vp-global.css"/>
+  <title>Create Account — NexusPay</title>
+  <link rel="stylesheet" href="./assets/css/np-global.css"/>
   <style>
     .step-panel { display: none; }
     .step-panel.active { display: block; }
@@ -24,31 +24,31 @@
   </style>
 </head>
 <body>
-<div class="vp-auth-wrap" style="align-items:flex-start;padding-top:40px;">
-  <div class="vp-auth-card" style="max-width:560px;">
+<div class="np-auth-wrap" style="align-items:flex-start;padding-top:40px;">
+  <div class="np-auth-card" style="max-width:560px;">
 
     <!-- Logo -->
-    <div class="vp-auth-logo">
-      <div class="vp-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
+    <div class="np-auth-logo">
+      <div class="np-nav-logo-mark" style="width:40px;height:40px;border-radius:11px;">
         <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/></svg>
       </div>
-      <span class="vp-nav-logo-text">VaultPay</span>
+      <span class="np-nav-logo-text">NexusPay</span>
     </div>
 
     <!-- Steps Indicator -->
-    <div class="vp-steps" id="steps-indicator">
-      <div class="vp-step active" id="step-ind-1"><div class="vp-step-circle">1</div><div class="vp-step-label">Account</div></div>
-      <div class="vp-step" id="step-ind-2"><div class="vp-step-circle">2</div><div class="vp-step-label">Business</div></div>
-      <div class="vp-step" id="step-ind-3"><div class="vp-step-circle">3</div><div class="vp-step-label">Branding</div></div>
-      <div class="vp-step" id="step-ind-4"><div class="vp-step-circle">4</div><div class="vp-step-label">Done</div></div>
+    <div class="np-steps" id="steps-indicator">
+      <div class="np-step active" id="step-ind-1"><div class="np-step-circle">1</div><div class="np-step-label">Account</div></div>
+      <div class="np-step" id="step-ind-2"><div class="np-step-circle">2</div><div class="np-step-label">Business</div></div>
+      <div class="np-step" id="step-ind-3"><div class="np-step-circle">3</div><div class="np-step-label">Branding</div></div>
+      <div class="np-step" id="step-ind-4"><div class="np-step-circle">4</div><div class="np-step-label">Done</div></div>
     </div>
 
-    <div id="alert" class="vp-alert"></div>
+    <div id="alert" class="np-alert"></div>
 
     <!-- ── STEP 1: Account ─────────────────── -->
     <div class="step-panel active" id="panel-1">
-      <h2 class="vp-auth-title">Create your account</h2>
-      <p class="vp-auth-sub">Start accepting payments in minutes</p>
+      <h2 class="np-auth-title">Create your account</h2>
+      <p class="np-auth-sub">Start accepting payments in minutes</p>
 
       <div class="form-group">
         <label>Full Name <span class="req">*</span></label>
@@ -75,14 +75,14 @@
 
       <button class="btn btn-primary btn-block btn-lg" onclick="goStep2()">Continue →</button>
       <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:16px;">
-        Already have an account? <a href="/login.html" style="font-weight:700;">Sign in</a>
+        Already have an account? <a href="./login.html" style="font-weight:700;">Sign in</a>
       </p>
     </div>
 
     <!-- ── STEP 2: Business Info ───────────── -->
     <div class="step-panel" id="panel-2">
-      <h2 class="vp-auth-title">Tell us about your business</h2>
-      <p class="vp-auth-sub">This helps us customize your payment gateway</p>
+      <h2 class="np-auth-title">Tell us about your business</h2>
+      <p class="np-auth-sub">This helps us customize your payment gateway</p>
 
       <div class="form-group">
         <label>Business Name <span class="req">*</span></label>
@@ -136,8 +136,8 @@
 
     <!-- ── STEP 3: Branding ────────────────── -->
     <div class="step-panel" id="panel-3">
-      <h2 class="vp-auth-title">Customize your checkout</h2>
-      <p class="vp-auth-sub">Your customers will see this on the payment page</p>
+      <h2 class="np-auth-title">Customize your checkout</h2>
+      <p class="np-auth-sub">Your customers will see this on the payment page</p>
 
       <div class="form-group">
         <label>Brand Color</label>
@@ -179,7 +179,7 @@
             <div style="font-size:12px;color:#6b7280;margin-top:4px;">Scan QR to pay</div>
           </div>
           <div style="padding:4px 20px 12px;text-align:center;border-top:1px solid #e5e7eb;">
-            <span style="font-size:11px;color:#9ca3af;">Powered by <strong style="color:#5b4fff;" id="preview-brand">VaultPay</strong></span>
+            <span style="font-size:11px;color:#9ca3af;">Powered by <strong style="color:#5b4fff;" id="preview-brand">NexusPay</strong></span>
           </div>
         </div>
       </div>
@@ -195,7 +195,7 @@
       <div class="success-screen">
         <div class="success-icon">🎉</div>
         <h2 style="font-size:24px;margin-bottom:8px;">You're all set!</h2>
-        <p style="color:var(--muted);margin-bottom:24px;">Your VaultPay account is ready. Save your API keys below — the live key won't be shown again.</p>
+        <p style="color:var(--muted);margin-bottom:24px;">Your NexusPay account is ready. Save your API keys below — the live key won't be shown again.</p>
 
         <div style="text-align:left;">
           <div class="key-reveal">
@@ -214,7 +214,7 @@
           ⚠ <strong>Important:</strong> Store your live API key in a secure place (password manager or secret manager). It cannot be recovered if lost — only regenerated.
         </div>
 
-        <a href="/dashboard/" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
+        <a href="./dashboard/" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
           Go to Dashboard →
         </a>
       </div>
@@ -223,8 +223,8 @@
   </div>
 </div>
 
-<script src="/config.js"></script>
-<script src="/assets/js/vp-utils.js"></script>
+<script src="./config.js"></script>
+<script src="./assets/js/np-utils.js"></script>
 <script>
 let selectedBizType = '';
 let selectedColor   = '#5b4fff';
@@ -237,7 +237,7 @@ function goStep(n) {
     el.classList.remove('active','done');
     if (idx < n)  el.classList.add('done');
     if (idx === n) el.classList.add('active');
-    if (idx <= n) el.querySelector('.vp-step-circle').textContent = idx < n ? '✓' : idx;
+    if (idx <= n) el.querySelector('.np-step-circle').textContent = idx < n ? '✓' : idx;
   });
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -380,7 +380,7 @@ async function submitSignup() {
 }
 
 // Redirect if already logged in
-if (VP.isLoggedIn) window.location.href = '/dashboard/';
+if (VP.isLoggedIn) window.location.href = './dashboard/index.html';
 </script>
 </body>
 </html>

@@ -5,7 +5,7 @@ const { SMS_PATTERNS, PAYMENT_STATUS } = require('../config/constants');
 const { sendSuccess, sendError } = require('../utils/response');
 const logger = require('../utils/logger');
 
-const parseSmsText = (sms) => {
+const parseSmsText = async (sms) => {
   const result = { type: null, amount: null, transactionId: null, bank: null, account: null };
   const lower  = sms.toLowerCase();
 
@@ -63,12 +63,12 @@ const parseSms = async (req, res) => {
 
     if (payment_id) {
       // Direct match
-      const payment = payments.findById(payment_id);
+      const payment = await payments.findById(payment_id);
       if (payment && payment.merchant_id === req.merchantId) {
         const rupeeAmt = payment.amount / 100;
         if (Math.abs(rupeeAmt - parsed.amount) <= 0.01) {
           if ([PAYMENT_STATUS.CREATED, PAYMENT_STATUS.PROCESSING].includes(payment.status)) {
-            payments.update(payment_id, {
+            await payments.update(payment_id, {
               status:       PAYMENT_STATUS.CAPTURED,
               captured_at:  new Date().toISOString(),
               sms_ack_txn_id: parsed.transactionId || '',
@@ -86,12 +86,12 @@ const parseSms = async (req, res) => {
       }
     } else {
       // Auto-match by scanning merchant's pending payments
-      const pending = payments.listByMerchant(req.merchantId, 100)
+      const pending = await payments.listByMerchant(req.merchantId, 100)
         .filter(p => [PAYMENT_STATUS.CREATED, PAYMENT_STATUS.PROCESSING].includes(p.status));
 
       for (const p of pending) {
         if (Math.abs(p.amount / 100 - parsed.amount) <= 0.01 && parsed.transactionId) {
-          payments.update(p.id, {
+          await payments.update(p.id, {
             status:          PAYMENT_STATUS.CAPTURED,
             captured_at:     new Date().toISOString(),
             sms_ack_txn_id:  parsed.transactionId,
@@ -105,7 +105,7 @@ const parseSms = async (req, res) => {
     }
 
     // Log SMS
-    smsLogs.create({
+    await smsLogs.create({
       id:                 uuidv4(),
       merchant_id:        req.merchantId,
       sender:             sender || '',
@@ -136,7 +136,7 @@ const parseSms = async (req, res) => {
 };
 
 // POST /sms/webhook (Twilio)
-const smsWebhook = (req, res) => {
+const smsWebhook = async (req, res) => {
   const { Body } = req.body || {};
   if (Body) {
     const parsed = parseSmsText(Body);

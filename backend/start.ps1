@@ -1,4 +1,4 @@
-# VaultPay Backend Starter
+# NexusPay Backend Starter
 # Run from the backend folder: .\start.ps1
 
 # Known Node 20 paths (set by nvm-windows)
@@ -28,7 +28,7 @@ if ($portInUse) {
 
 Write-Host "Using Node: $nodeExe" -ForegroundColor Cyan
 Write-Host "Version: $( & $nodeExe --version )" -ForegroundColor Green
-Write-Host "Starting VaultPay backend on port 5000..." -ForegroundColor Green
+Write-Host "Starting NexusPay backend on port 5000..." -ForegroundColor Green
 Write-Host ""
 
 & $nodeExe server.js

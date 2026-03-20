@@ -14,7 +14,7 @@ const SQL_RE = /\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRI
 
 const securityMiddleware = (req, res, next) => {
   res.removeHeader('X-Powered-By');
-  res.setHeader('X-Powered-By', process.env.PLATFORM_NAME || 'VaultPay');
+  res.setHeader('X-Powered-By', process.env.PLATFORM_NAME || 'NexusPay');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
@@ -39,7 +39,7 @@ const mkLimiter = (opts) => rateLimit({
   max:             opts.max      || 200,
   standardHeaders: true,
   legacyHeaders:   false,
-  keyGenerator:    (req) => req.headers['x-vaultpay-key'] || req.ip,
+  keyGenerator:    (req) => req.headers['x-nexuspay-key'] || req.ip,
   handler:         (req, res) => res.status(429).json({
     success: false,
     error:   { code: 'RATE_LIMIT_EXCEEDED', message: opts.message || 'Too many requests. Please slow down.' },

@@ -1,4 +1,4 @@
-# VaultPay — Deployment Guide
+# NexusPay — Deployment Guide
 
 ## Architecture
 
@@ -10,7 +10,7 @@ Cloudflare Pages / GitHub Pages    Railway / Render / Fly.io
 │  /signup.html                 │   │  SQLite (or PostgreSQL)    │
 │  /dashboard/index.html        │   │  POST /api/v1/auth/*       │
 │  /pay/index.html              │   │  POST /api/v1/payments/*   │
-│  /assets/js/vp-utils.js       │   │  POST /api/v1/sms/*        │
+│  /assets/js/np-utils.js       │   │  POST /api/v1/sms/*        │
 │  /config.js  ← edit this!     │   │  GET  /api/v1/merchants/*  │
 └───────────────────────────────┘   └────────────────────────────┘
 ```
@@ -57,7 +57,7 @@ SMTP_PASS=your-app-password
 FROM_EMAIL=payments@yourdomain.com
 FROM_NAME=Your Platform Name
 FRONTEND_URL=https://your-frontend.pages.dev
-DB_PATH=/data/vaultpay.db
+DB_PATH=/data/nexuspay.db
 ```
 
 Generate secure secrets:
@@ -98,9 +98,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"   # WEB
 Edit `config.js` in the root directory:
 
 ```javascript
-window.VAULTPAY_API_URL = "https://your-backend.railway.app/api/v1";
+window.NEXUSPAY_API_URL = "https://your-backend.railway.app/api/v1";
 
-window.VAULTPAY_BRAND = {
+window.NEXUSPAY_BRAND = {
   name:    "YourPlatformName",     // shown in "Powered by" footer
   tagline: "Secure Payments",
   website: "https://yourdomain.com",
@@ -123,7 +123,7 @@ curl -X POST https://your-backend.railway.app/api/v1/auth/register \
 
 # 2. Create a payment
 curl -X POST https://your-backend.railway.app/api/v1/payments/create \
-  -H "X-VaultPay-Key: vp_test_YOUR_TEST_KEY" \
+  -H "X-NexusPay-Key: vp_test_YOUR_TEST_KEY" \
   -H "Content-Type: application/json" \
   -d '{"order_id":"ORD-001","amount":49900,"currency":"INR","customer":{"name":"Arjun","email":"arjun@test.com","phone":"+919999999999"},"description":"Test Payment"}'
 
@@ -136,10 +136,10 @@ curl -X POST https://your-backend.railway.app/api/v1/payments/create \
 
 ```javascript
 // server.js (your app's backend)
-const VaultPay = require('./sdk/node/vaultpay');
+const NexusPay = require('./sdk/node/nexuspay');
 
-const vp = new VaultPay(process.env.VAULTPAY_API_KEY, {
-  baseUrl: process.env.VAULTPAY_BASE_URL,  // your backend URL
+const vp = new NexusPay(process.env.NEXUSPAY_API_KEY, {
+  baseUrl: process.env.NEXUSPAY_BASE_URL,  // your backend URL
 });
 
 // Create a payment
@@ -151,15 +151,15 @@ app.post('/checkout', async (req, res) => {
     customer:     { name: req.body.name, email: req.body.email, phone: req.body.phone },
     description:  req.body.description,
     redirect_url: `${process.env.MY_APP_URL}/payment-success`,
-    callback_url: `${process.env.MY_APP_URL}/webhook/vaultpay`,
+    callback_url: `${process.env.MY_APP_URL}/webhook/nexuspay`,
   });
   res.redirect(payment.gateway_url);
 });
 
 // Handle webhook
-app.post('/webhook/vaultpay', express.raw({ type: 'application/json' }), (req, res) => {
-  const sig = req.headers['x-vaultpay-signature'];
-  if (!VaultPay.verifyWebhookSignature(req.body, sig, process.env.VAULTPAY_WEBHOOK_SECRET)) {
+app.post('/webhook/nexuspay', express.raw({ type: 'application/json' }), (req, res) => {
+  const sig = req.headers['x-nexuspay-signature'];
+  if (!NexusPay.verifyWebhookSignature(req.body, sig, process.env.NEXUSPAY_WEBHOOK_SECRET)) {
     return res.status(401).end();
   }
   const { event, data } = JSON.parse(req.body);
@@ -188,7 +188,7 @@ The backend automatically allows this origin.
 ## Payment Flow
 
 ```
-Customer → Your App → VaultPay API → Checkout Page → Customer pays → 
+Customer → Your App → NexusPay API → Checkout Page → Customer pays → 
   ↓                                                                    
 Webhook fires to Your App → Fulfill order → Customer sees success
 ```
@@ -215,9 +215,9 @@ Webhook fires to Your App → Fulfill order → Customer sees success
 │   └── src/
 │
 ├── sdk/
-│   ├── node/vaultpay.js    → Copy to your Node.js project
-│   ├── python/vaultpay.py  → Copy to your Python project
-│   └── php/VaultPay.php    → Copy to your PHP project
+│   ├── node/nexuspay.js    → Copy to your Node.js project
+│   ├── python/nexuspay.py  → Copy to your Python project
+│   └── php/NexusPay.php    → Copy to your PHP project
 │
 └── DEPLOY.md               ← This file
 ```

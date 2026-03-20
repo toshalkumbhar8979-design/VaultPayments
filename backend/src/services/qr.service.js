@@ -4,7 +4,7 @@ const logger  = require('../utils/logger');
 
 const generatePaymentQR = async ({ paymentId, amount, currency, merchantName, description }) => {
   try {
-    const upiVpa = process.env.UPI_VPA || 'vaultpay@upi';
+    const upiVpa = process.env.UPI_VPA || 'nexuspay@upi';
     const upiString = `upi://pay?pa=${upiVpa}&pn=${encodeURIComponent(merchantName)}&am=${amount}&cu=${currency}&tn=${encodeURIComponent((description || paymentId).substring(0, 50))}&mc=5411`;
     return await QRCode.toDataURL(upiString, {
       errorCorrectionLevel: 'H', type: 'image/png', quality: 0.95, margin: 2, width: 400,
