@@ -124,15 +124,6 @@ const schemas = {
     sender:     Joi.string().max(20).optional().allow(''),
     payment_id: Joi.string().optional().allow(''),
   }),
-  updateMerchant: Joi.object({
-    business_name: Joi.string().min(2).max(100).optional(),
-    phone:         Joi.string().pattern(/^\+?[1-9]\d{9,14}$/).optional(),
-    website:       Joi.string().optional().allow(''),
-    logo_url:      Joi.string().optional().allow(''),
-    upi_id:        Joi.string().optional().allow(''),
-    brand_color:   Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional(),
-    webhook_url:   Joi.string().optional().allow(''),
-  }),
 };
 
 // ─── error.middleware.js ──────────────────────────────────────────────────────

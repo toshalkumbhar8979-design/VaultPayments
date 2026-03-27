@@ -1,6 +1,7 @@
 'use strict';
 const { merchants, payments, transactions } = require('../config/database');
 const { sendSuccess, sendError } = require('../utils/response');
+const logger = require('../utils/logger');
 
 const safeMerchant = async (m) => {
   if (!m) return null;
