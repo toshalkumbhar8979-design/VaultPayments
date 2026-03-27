@@ -1,0 +1,19 @@
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ SQLite database ready at C:\Users\tosha\Downloads\VaultPayments\backend\data\nexuspay.db
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Database initialized
+2026-03-28 00:30:23 [[32minfo[39m]: 🔐 Secure Vault SQLite database ready at C:\Users\tosha\Downloads\VaultPayments\backend\data\vault.db
+2026-03-28 00:30:23 [[32minfo[39m]: 🔐 Vault Database initialized
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Connector registered: upi (UPI / QR Payment)
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Connector registered: card_simulator (Card Payment (Simulator))
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Connector registered: bank_transfer (Bank Transfer (NEFT/IMPS/RTGS))
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Connector registered: paypal (PayPal)
+2026-03-28 00:30:23 [[32minfo[39m]: 🔌 4 connectors initialized
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Payment connectors initialized
+2026-03-28 00:30:23 [[32minfo[39m]: [BILLING] Scheduler activated. Checking due subscriptions every 60000ms.
+2026-03-28 00:30:23 [[32minfo[39m]: ✅ Billing scheduler background job running
+2026-03-28 00:30:23 [[31merror[39m]: uncaughtException: listen EADDRINUSE: address already in use :::5000
+Error: listen EADDRINUSE: address already in use :::5000
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at Server.listen (node:net:2067:7)
+    at Function.listen (C:\Users\tosha\Downloads\VaultPayments\backend\node_modules\express\lib\application.js:635:24)
+    at start (C:\Users\tosha\Downloads\VaultPayments\backend\server.js:151:9)

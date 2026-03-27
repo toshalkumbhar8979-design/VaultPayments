@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "paypal-integration": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "31587378379f3a6ae5e3040f3602a9b9063b855173f2cc0bff0e6a175012f478"
+    },
+    "pci-compliance": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "c5300a73867f01912e4ee08c3d6812f9c6b54bc1e8e43d7aa008e2fd1d9e21db"
+    }
+  }
+}

@@ -29,7 +29,7 @@ const register = async (req, res) => {
     const {
       name, email, phone, password,
       business_name, business_type, website, country,
-      gst_number, brand_color, logo_url,
+      gst_number, brand_color, logo_url, upi_id,
     } = req.body;
 
     // Duplicate check
@@ -62,6 +62,7 @@ const register = async (req, res) => {
       api_key_test_hash:    testHash,
       api_key_test_prefix:  testPrefix,
       webhook_secret:       webhookSecret,
+      upi_id:               upi_id?.trim() || '',
       status:               'active',
       kyc_verified:         0,
       created_at:           now,

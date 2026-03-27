@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS merchants (
   api_key_test_hash     TEXT NOT NULL,
   api_key_test_prefix   TEXT NOT NULL,
   webhook_secret        TEXT NOT NULL,
+  upi_id                TEXT DEFAULT '',
+  upi_verified          INTEGER DEFAULT 0,
   status                TEXT DEFAULT 'active' CHECK(status IN ('active','suspended','pending')),
   kyc_verified          INTEGER DEFAULT 0,
   created_at            TEXT NOT NULL,
@@ -65,19 +67,26 @@ CREATE TABLE IF NOT EXISTS payments (
   order_id          TEXT NOT NULL,
   amount            INTEGER NOT NULL,
   currency          TEXT DEFAULT 'INR',
-  status            TEXT DEFAULT 'created' CHECK(status IN ('created','processing','captured','failed','refunded','expired','cancelled')),
+  status            TEXT DEFAULT 'created' CHECK(status IN ('created','processing','authorized','captured','failed','refunded','expired','cancelled','declined')),
   customer_name     TEXT DEFAULT '',
   customer_email    TEXT DEFAULT '',
   customer_phone    TEXT DEFAULT '',
   description       TEXT DEFAULT '',
   qr_code           TEXT DEFAULT '',
   payment_method    TEXT DEFAULT 'qr',
+  connector_name    TEXT DEFAULT '',
+  connector_ref     TEXT DEFAULT '',
+  card_token        TEXT DEFAULT '',
+  card_brand        TEXT DEFAULT '',
+  card_last4        TEXT DEFAULT '',
   gateway_fee       INTEGER DEFAULT 0,
   net_amount        INTEGER DEFAULT 0,
   metadata          TEXT DEFAULT '{}',
   callback_url      TEXT DEFAULT '',
   redirect_url      TEXT DEFAULT '',
   sms_ack_txn_id    TEXT DEFAULT '',
+  decline_code      TEXT DEFAULT '',
+  retry_count       INTEGER DEFAULT 0,
   captured_at       TEXT,
   refunded_at       TEXT,
   created_at        TEXT NOT NULL,
@@ -118,6 +127,82 @@ CREATE TABLE IF NOT EXISTS sms_logs (
   action_taken        TEXT DEFAULT '',
   created_at          TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS connector_metrics (
+  id              TEXT PRIMARY KEY,
+  connector_name  TEXT NOT NULL,
+  merchant_id     TEXT DEFAULT '',
+  total_attempts  INTEGER DEFAULT 0,
+  successes       INTEGER DEFAULT 0,
+  failures        INTEGER DEFAULT 0,
+  avg_latency_ms  REAL DEFAULT 0,
+  success_rate    REAL DEFAULT 0,
+  last_used_at    TEXT,
+  period          TEXT NOT NULL,
+  created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_cm_connector ON connector_metrics(connector_name);
+
+CREATE TABLE IF NOT EXISTS routing_rules (
+  id              TEXT PRIMARY KEY,
+  merchant_id     TEXT NOT NULL REFERENCES merchants(id),
+  name            TEXT NOT NULL,
+  priority        INTEGER DEFAULT 0,
+  conditions      TEXT DEFAULT '{}',
+  connector_name  TEXT NOT NULL,
+  is_active       INTEGER DEFAULT 1,
+  created_at      TEXT NOT NULL,
+  updated_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_rr_merchant ON routing_rules(merchant_id);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id              TEXT PRIMARY KEY,
+  merchant_id     TEXT DEFAULT '',
+  user_id         TEXT DEFAULT '',
+  action          TEXT NOT NULL,
+  resource        TEXT NOT NULL,
+  resource_id     TEXT DEFAULT '',
+  details         TEXT DEFAULT '{}',
+  ip_address      TEXT DEFAULT '',
+  user_agent      TEXT DEFAULT '',
+  result          TEXT DEFAULT 'success',
+  created_at      TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_merchant ON audit_logs(merchant_id);
+CREATE INDEX IF NOT EXISTS idx_audit_action   ON audit_logs(action);
+
+CREATE TABLE IF NOT EXISTS billing_plans (
+  id              TEXT PRIMARY KEY,
+  merchant_id     TEXT NOT NULL REFERENCES merchants(id),
+  name            TEXT NOT NULL,
+  amount          INTEGER NOT NULL,
+  currency        TEXT DEFAULT 'USD',
+  interval        TEXT DEFAULT 'MONTH',
+  created_at      TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id              TEXT PRIMARY KEY,
+  plan_id         TEXT NOT NULL REFERENCES billing_plans(id),
+  merchant_id     TEXT NOT NULL REFERENCES merchants(id),
+  customer_email  TEXT NOT NULL,
+  status          TEXT DEFAULT 'active' CHECK(status IN ('active','past_due','canceled')),
+  next_billing_date TEXT NOT NULL,
+  created_at      TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS invoices (
+  id              TEXT PRIMARY KEY,
+  subscription_id TEXT NOT NULL REFERENCES subscriptions(id),
+  merchant_id     TEXT NOT NULL REFERENCES merchants(id),
+  amount          INTEGER NOT NULL,
+  status          TEXT DEFAULT 'pending' CHECK(status IN ('pending','paid','failed')),
+  created_at      TEXT NOT NULL
+);
 `;
 
 // ─── Init ───────────────────────────────────────────────────────────────────
@@ -130,6 +215,9 @@ async function initDb() {
 
   // Run schema
   await db.exec(SCHEMA);
+
+  try { await db.exec("ALTER TABLE merchants ADD COLUMN upi_id TEXT DEFAULT ''"); } catch(_) {}
+  try { await db.exec("ALTER TABLE merchants ADD COLUMN upi_verified INTEGER DEFAULT 0"); } catch(_) {}
 
   logger.info(`✅ SQLite database ready at ${path.resolve(DB_PATH)}`);
   return db;
@@ -153,11 +241,11 @@ const merchants = {
       INSERT INTO merchants
         (id,name,email,phone,password_hash,business_name,business_type,website,country,gst_number,
          brand_color,logo_url,webhook_url,api_key_live_hash,api_key_live_prefix,api_key_test_hash,api_key_test_prefix,
-         webhook_secret,status,kyc_verified,created_at,updated_at)
+         webhook_secret,upi_id,upi_verified,status,kyc_verified,created_at,updated_at)
       VALUES
         (:id,:name,:email,:phone,:password_hash,:business_name,:business_type,:website,:country,:gst_number,
          :brand_color,:logo_url,:webhook_url,:api_key_live_hash,:api_key_live_prefix,:api_key_test_hash,:api_key_test_prefix,
-         :webhook_secret,:status,:kyc_verified,:created_at,:updated_at)
+         :webhook_secret,:upi_id,:upi_verified,:status,:kyc_verified,:created_at,:updated_at)
     `, mapParams(data));
     return this.findById(data.id);
   },
@@ -194,11 +282,13 @@ const payments = {
     await getDb().run(`
       INSERT INTO payments
         (id,merchant_id,order_id,amount,currency,status,customer_name,customer_email,customer_phone,
-         description,qr_code,payment_method,gateway_fee,net_amount,metadata,callback_url,redirect_url,
+         description,qr_code,payment_method,connector_name,connector_ref,card_token,card_brand,card_last4,
+         gateway_fee,net_amount,metadata,callback_url,redirect_url,decline_code,retry_count,
          created_at,updated_at,expires_at)
       VALUES
         (:id,:merchant_id,:order_id,:amount,:currency,:status,:customer_name,:customer_email,:customer_phone,
-         :description,:qr_code,:payment_method,:gateway_fee,:net_amount,:metadata,:callback_url,:redirect_url,
+         :description,:qr_code,:payment_method,:connector_name,:connector_ref,:card_token,:card_brand,:card_last4,
+         :gateway_fee,:net_amount,:metadata,:callback_url,:redirect_url,:decline_code,:retry_count,
          :created_at,:updated_at,:expires_at)
     `, mapParams(data));
     return this.findById(data.id);

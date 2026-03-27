@@ -2,7 +2,7 @@
 
 const { v4: uuidv4 } = require('uuid');
 const { payments, merchants, transactions } = require('../config/database');
-const { generatePaymentQR }    = require('../services/qr.service');
+const switchService    = require('../services/switch.service');
 const { sendPaymentConfirmation } = require('../services/email.service');
 const { signPayload }          = require('../services/crypto.service');
 const { sendSuccess, sendError } = require('../utils/response');
@@ -18,12 +18,14 @@ const createPayment = async (req, res) => {
       description = '', payment_method = 'qr',
       metadata = {}, callback_url, redirect_url,
       expires_in = 3600,
+      // Card-specific (for card connector)
+      card_token, card_last4, card_brand, _testCardNumber,
     } = req.body;
 
     const currencyConfig = CURRENCIES[currency];
     if (!currencyConfig) return sendError(res, 400, `Unsupported currency: ${currency}`, 'INVALID_CURRENCY');
 
-    const minAmount = 100; // 1 unit in smallest currency
+    const minAmount = 100;
     const maxAmount = 50000000;
     if (amount < minAmount) return sendError(res, 400, `Minimum amount is ${currencyConfig.symbol}1`, 'INVALID_AMOUNT');
     if (amount > maxAmount) return sendError(res, 400, `Maximum amount exceeded`, 'INVALID_AMOUNT');
@@ -40,12 +42,51 @@ const createPayment = async (req, res) => {
     const expiresAt  = new Date(Date.now() + expires_in * 1000).toISOString();
     const amountFmt  = `${currencyConfig.symbol}${(amount / currencyConfig.multiplier).toFixed(2)}`;
 
-    // Generate QR
-    const qrCode = await generatePaymentQR({
-      paymentId, amount: (amount / currencyConfig.multiplier).toFixed(2),
-      currency, merchantName: merchant.business_name || merchant.name,
+    // ── Route through the Payment Switch ────────────────────────────────
+    const switchResult = await switchService.processPayment({
+      paymentId,
+      merchantId,
+      merchant,
+      amount,
+      currency,
+      paymentMethod: payment_method,
+      customer,
       description,
+      metadata,
+      callbackUrl: callback_url,
+      redirectUrl: redirect_url,
+      expiresIn: expires_in,
+      cardToken:  card_token,
+      cardLast4:  card_last4,
+      cardBrand:  card_brand,
+      _testCardNumber,
     });
+
+    if (!switchResult.success && switchResult.status === 'declined') {
+      // Record the declined payment
+      await payments.create({
+        id: paymentId, merchant_id: merchantId, order_id, amount, currency,
+        status: 'declined', customer_name: customer.name, customer_email: customer.email,
+        customer_phone: customer.phone, description, qr_code: '', payment_method,
+        connector_name: switchResult.connectorName || '', connector_ref: '',
+        card_token: card_token || '', card_brand: card_brand || '', card_last4: card_last4 || '',
+        gateway_fee: gatewayFee, net_amount: netAmount, metadata: JSON.stringify(metadata),
+        callback_url: callback_url || '', redirect_url: redirect_url || '',
+        decline_code: switchResult.declineCode || '', retry_count: switchResult.retryCount || 0,
+        created_at: now, updated_at: now, expires_at: expiresAt,
+      });
+      return sendError(res, 402, switchResult.rawResponse?.message || 'Payment declined', 'PAYMENT_DECLINED');
+    }
+
+    if (!switchResult.success) {
+      return sendError(res, 502, switchResult.error?.message || 'Payment processing failed', switchResult.error?.code || 'SWITCH_ERROR');
+    }
+
+    // Map switch status to payment status
+    let paymentStatus = PAYMENT_STATUS.CREATED;
+    if (switchResult.status === 'authorized') paymentStatus = 'authorized';
+    if (switchResult.status === 'requires_action') paymentStatus = PAYMENT_STATUS.PROCESSING;
+    if (switchResult.status === 'requires_3ds') paymentStatus = PAYMENT_STATUS.PROCESSING;
 
     const payment = await payments.create({
       id:             paymentId,
@@ -53,37 +94,51 @@ const createPayment = async (req, res) => {
       order_id,
       amount,
       currency,
-      status:         PAYMENT_STATUS.CREATED,
+      status:         paymentStatus,
       customer_name:  customer.name,
       customer_email: customer.email,
       customer_phone: customer.phone,
       description,
-      qr_code:        qrCode,
+      qr_code:        switchResult.qrCode || '',
       payment_method,
+      connector_name: switchResult.connectorName || '',
+      connector_ref:  switchResult.connectorRef || '',
+      card_token:     card_token || '',
+      card_brand:     switchResult.rawResponse?.cardBrand || card_brand || '',
+      card_last4:     switchResult.rawResponse?.cardLast4 || card_last4 || '',
       gateway_fee:    gatewayFee,
       net_amount:     netAmount,
       metadata:       JSON.stringify(metadata),
       callback_url:   callback_url || '',
       redirect_url:   redirect_url || '',
+      decline_code:   '',
+      retry_count:    switchResult.retryCount || 0,
       created_at:     now,
       updated_at:     now,
       expires_at:     expiresAt,
     });
 
-    const gatewayUrl = `${process.env.FRONTEND_URL || ''}/pay/?id=${paymentId}`;
+    // Fixed: Using relative URL if FRONTEND_URL is missing or local, 
+    // to prevent iframe loading issues on live servers.
+    const gatewayUrl = process.env.FRONTEND_URL && !process.env.FRONTEND_URL.includes('localhost') 
+      ? `${process.env.FRONTEND_URL}/pay/?id=${paymentId}`
+      : `../pay/?id=${paymentId}`;
 
-    logger.info(`Payment created: ${paymentId} | ${amountFmt} | merchant: ${merchantId}`);
+    logger.info(`Payment created: ${paymentId} | ${amountFmt} | connector: ${switchResult.connectorName} | merchant: ${merchantId}`);
 
     return sendSuccess(res, 201, 'Payment created', {
-      payment_id:      payment.id,
-      order_id:        payment.order_id,
-      amount:          payment.amount,
-      amount_formatted:amountFmt,
+      payment_id:       payment.id,
+      order_id:         payment.order_id,
+      amount:           payment.amount,
+      amount_formatted: amountFmt,
       currency,
-      status:          payment.status,
-      qr_code:         qrCode,
-      gateway_url:     gatewayUrl,
-      expires_at:      expiresAt,
+      status:           payment.status,
+      connector:        switchResult.connectorName,
+      qr_code:          switchResult.qrCode || null,
+      virtual_account:  switchResult.virtualAccount || null,
+      three_ds_url:     switchResult.threeDSUrl || null,
+      gateway_url:      gatewayUrl,
+      expires_at:       expiresAt,
       merchant: {
         name:        merchant.business_name || merchant.name,
         brand_color: merchant.brand_color,

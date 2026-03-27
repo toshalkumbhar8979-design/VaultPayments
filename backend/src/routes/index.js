@@ -35,6 +35,7 @@ payRouter.post('/:payment_id/refund',  authenticateApiKey, pay.refundPayment);
 const merchantRouter = express.Router();
 merchantRouter.get('/me',        authenticateJWT, merchant.getProfile);
 merchantRouter.put('/me',        authenticateJWT, validate(schemas.updateMerchant), merchant.updateProfile);
+merchantRouter.post('/verify-upi', authenticateJWT, merchant.verifyUPI);
 merchantRouter.get('/dashboard', authenticateJWT, merchant.getDashboard);
 
 // ─── SMS ──────────────────────────────────────────────────────────────────────

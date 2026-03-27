@@ -134,10 +134,10 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   font-size: 11px; font-weight: 700; text-transform: uppercase;
   letter-spacing: 1px; color: var(--muted);
   padding: 10px 16px; border-bottom: 1.5px solid var(--border);
-  text-align: left; white-space: nowrap; background: #fafafa;
+  text-align: left; white-space: nowrap; background: var(--surface);
 }
 .np-table tbody tr { transition: background 0.15s; }
-.np-table tbody tr:hover { background: #f9f9ff; }
+.np-table tbody tr:hover { background: var(--brand-light); }
 .np-table tbody td { padding: 13px 16px; font-size: 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 .np-table .td-mono { font-family: var(--mono); font-size: 12px; color: #5b4fff; }
 
@@ -213,7 +213,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Key Display ────────────────────────── */
 .np-key-box {
   display: flex; align-items: center; gap: 10px;
-  background: #f8f8ff; border: 1.5px solid #e0e0ff;
+  background: var(--surface); border: 1.5px solid var(--border);
   border-radius: var(--radius-sm); padding: 10px 14px;
 }
 .np-key-text { font-family: var(--mono); font-size: 13px; color: var(--brand); flex: 1; word-break: break-all; }
@@ -243,7 +243,7 @@ textarea.form-control { resize: vertical; min-height: 90px; }
 /* ── Modal ──────────────────────────────── */
 .np-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 20px; }
 .np-modal-overlay.open { display: flex; }
-.np-modal { background: #fff; border-radius: var(--radius-lg); padding: 32px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.np-modal { background: var(--card); border-radius: var(--radius-lg); padding: 32px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border); }
 .np-modal-close { float: right; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); line-height: 1; }
 .np-modal-close:hover { color: var(--text); }
 

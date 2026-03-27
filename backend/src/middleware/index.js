@@ -78,16 +78,17 @@ const schemas = {
   register: Joi.object({
     name:          Joi.string().min(2).max(80).required(),
     email:         Joi.string().email().lowercase().required(),
-    phone:         Joi.string().pattern(/^\+?[1-9]\d{9,14}$/).required(),
+    phone:         Joi.string().min(7).max(16).required(),
     password:      Joi.string().min(8).pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&&#])/).required()
                    .messages({ 'string.pattern.base': 'Password needs uppercase, number, special char' }),
     business_name: Joi.string().min(2).max(100).required(),
     business_type: Joi.string().valid('ecommerce','saas','services','food','education','healthcare','retail','events','other').default('other'),
-    website:       Joi.string().uri().required(),
+    website:       Joi.string().required(),
     country:       Joi.string().length(2).uppercase().default('IN'),
     gst_number:    Joi.string().max(20).optional().allow(''),
     brand_color:   Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).default('#5b4fff'),
-    logo_url:      Joi.string().uri().optional().allow(''),
+    logo_url:      Joi.string().optional().allow(''),
+    upi_id:        Joi.string().optional().allow(''),
   }),
   login: Joi.object({
     email:    Joi.string().email().required(),
@@ -100,14 +101,23 @@ const schemas = {
     customer:      Joi.object({
       name:  Joi.string().min(1).max(100).required(),
       email: Joi.string().email().required(),
-      phone: Joi.string().pattern(/^\+?[1-9]\d{9,14}$/).required(),
+      phone: Joi.string().min(10).max(16).required(),
     }).required(),
-    description:   Joi.string().max(500).default(''),
+    description:   Joi.string().allow('').max(500).default(''),
     payment_method:Joi.string().valid('upi','card','net_banking','wallet','qr').default('qr'),
     metadata:      Joi.object().max(20).default({}),
-    callback_url:  Joi.string().uri().optional().allow(''),
-    redirect_url:  Joi.string().uri().optional().allow(''),
+    callback_url:  Joi.string().optional().allow(''),
+    redirect_url:  Joi.string().optional().allow(''),
     expires_in:    Joi.number().integer().min(300).max(86400).default(3600),
+  }),
+  updateMerchant: Joi.object({
+    business_name: Joi.string().min(2).max(100).optional(),
+    phone:         Joi.string().optional().allow(''),
+    website:       Joi.string().optional().allow(''),
+    logo_url:      Joi.string().optional().allow(''),
+    upi_id:        Joi.string().optional().allow(''),
+    brand_color:   Joi.string().optional().allow(''),
+    webhook_url:   Joi.string().optional().allow(''),
   }),
   parseSms: Joi.object({
     sms:        Joi.string().min(10).max(2000).required(),
@@ -117,10 +127,11 @@ const schemas = {
   updateMerchant: Joi.object({
     business_name: Joi.string().min(2).max(100).optional(),
     phone:         Joi.string().pattern(/^\+?[1-9]\d{9,14}$/).optional(),
-    website:       Joi.string().uri().optional().allow(''),
-    logo_url:      Joi.string().uri().optional().allow(''),
+    website:       Joi.string().optional().allow(''),
+    logo_url:      Joi.string().optional().allow(''),
+    upi_id:        Joi.string().optional().allow(''),
     brand_color:   Joi.string().pattern(/^#[0-9A-Fa-f]{6}$/).optional(),
-    webhook_url:   Joi.string().uri().optional().allow(''),
+    webhook_url:   Joi.string().optional().allow(''),
   }),
 };
 

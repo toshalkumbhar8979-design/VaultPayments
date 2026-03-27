@@ -128,6 +128,12 @@
         </div>
       </div>
 
+      <div class="form-group" style="margin-top: 4px;">
+        <label>Merchant UPI ID <span class="req">*</span></label>
+        <input type="text" id="s2-upi" class="form-control" placeholder="e.g. yourname@okhdfcbank"/>
+        <p class="form-hint">Customer QR code payments will be directly routed to this UPI ID</p>
+      </div>
+
       <div style="display:flex;gap:10px;margin-top:4px;">
         <button class="btn btn-outline btn-block" onclick="goStep(1)">← Back</button>
         <button class="btn btn-primary btn-block btn-lg" onclick="goStep3()">Continue →</button>
@@ -300,11 +306,13 @@ function goStep2() {
 function goStep3() {
   const name    = document.getElementById('s2-biz-name').value.trim();
   const website = document.getElementById('s2-website').value.trim();
+  const upi     = document.getElementById('s2-upi').value.trim();
   const alert   = document.getElementById('alert');
 
   if (!name) return UI.alert(alert,'error','Business name is required');
   if (!selectedBizType) return UI.alert(alert,'error','Please select your business type');
   if (!website) return UI.alert(alert,'error','Business website is required');
+  if (!upi || !upi.includes('@')) return UI.alert(alert,'error','A valid UPI ID is required for QR payments');
 
   UI.clearAlert(alert);
   updatePreview();
@@ -387,6 +395,7 @@ async function submitSignup() {
     website:       document.getElementById('s2-website').value.trim(),
     country:       document.getElementById('s2-country').value,
     gst_number:    document.getElementById('s2-gst').value.trim(),
+    upi_id:        document.getElementById('s2-upi').value.trim(),
     brand_color:   selectedColor,
     logo_url:      logoUrl || '',
   };

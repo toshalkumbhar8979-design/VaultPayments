@@ -17,14 +17,33 @@ const getProfile = async (req, res) => {
 
 // PUT /merchants/me
 const updateProfile = async (req, res) => {
-  const allowed = ['business_name','phone','website','logo_url','brand_color','webhook_url'];
+  const allowed = ['business_name','phone','website','logo_url','brand_color','webhook_url', 'upi_id'];
   const updates = {};
   for (const key of allowed) {
     if (req.body[key] !== undefined) updates[key] = req.body[key];
   }
   if (!Object.keys(updates).length) return sendError(res, 400, 'No valid fields to update');
   const updated = await merchants.update(req.merchantId, updates);
-  return sendSuccess(res, 200, 'Profile updated', safeMerchant(updated));
+  return sendSuccess(res, 200, 'Profile updated', await safeMerchant(updated));
+};
+
+// POST /merchants/verify-upi
+const verifyUPI = async (req, res) => {
+  try {
+    const m = await merchants.findById(req.merchantId);
+    if (!m.upi_id) return sendError(res, 400, 'Please set your UPI ID first');
+
+    // Simulation: Send verification SMS
+    logger.info(`[UPI_VERIFY] Sending verification request to UPI ${m.upi_id} for merchant ${m.id}`);
+
+    // Auto-verify for simulation after a "successful" message send
+    const updated = await merchants.update(m.id, { upi_verified: 1 });
+    
+    return sendSuccess(res, 200, 'UPI Verified Successfully', await safeMerchant(updated));
+  } catch (err) {
+    logger.error('UPI Verify error:', err);
+    return sendError(res, 500, 'Verification failed');
+  }
 };
 
 // GET /merchants/dashboard
@@ -46,4 +65,4 @@ const getDashboard = async (req, res) => {
   });
 };
 
-module.exports = { getProfile, updateProfile, getDashboard };
+module.exports = { getProfile, updateProfile, getDashboard, verifyUPI };

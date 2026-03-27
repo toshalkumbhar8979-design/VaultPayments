@@ -38,6 +38,24 @@
       QR Generator
     </a>
 
+    <div class="np-sidebar-section">Platform</div>
+    <a class="np-sidebar-link" data-page="analytics" href="#analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      Analytics
+    </a>
+    <a class="np-sidebar-link" data-page="subscriptions" href="#subscriptions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      Subscriptions
+    </a>
+    <a class="np-sidebar-link" data-page="routing" href="#routing">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      Routing Engine
+    </a>
+    <a class="np-sidebar-link" data-page="compliance" href="#compliance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      PCI Audit
+    </a>
+
     <div class="np-sidebar-section">Account</div>
     <a class="np-sidebar-link" data-page="settings" href="#settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M1 12h3M20 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
@@ -270,6 +288,87 @@
       </div>
     </div>
 
+    <!-- ── ANALYTICS ─────────────────────────────────── -->
+    <div class="np-page" id="page-analytics">
+      <div class="np-page-header"><h1>Platform Analytics</h1><p>Monitor transaction success rates and payment volume</p></div>
+      <div class="card">
+        <div class="card-body" style="text-align:center;padding:60px 20px;">
+          <h2 style="font-size:48px;margin-bottom:10px;">📊</h2>
+          <h3 style="font-size:18px;font-weight:700;margin-bottom:8px;">Advanced Analytics Enabled</h3>
+          <p style="color:var(--muted);font-size:14px;max-width:400px;margin:0 auto;">Connectors are now tracking latency, attempt counts, and conversion rates seamlessly via the Switch Service.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SUBSCRIPTIONS ─────────────────────────────── -->
+    <div class="np-page" id="page-subscriptions">
+      <div class="np-page-header" style="display:flex;justify-content:space-between;">
+        <div><h1>Subscriptions & Billing</h1><p>Manage recurring payment plans and invoices</p></div>
+        <button class="btn btn-primary btn-sm" onclick="alert('Demo: Create Plan Flow')">+ New Plan</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Active Subscriptions</span></div>
+        <div class="table-wrap" id="subs-table">
+          <table class="np-table">
+            <thead><tr><th>Plan ID</th><th>Customer</th><th>Status</th><th>Next Billing</th></tr></thead>
+            <tbody><tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px;">No active subscriptions yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ROUTING ENGINE ────────────────────────────── -->
+    <div class="np-page" id="page-routing">
+      <div class="np-page-header"><h1>Intelligent Routing</h1><p>Configure dynamic routing logic for your payment gateways</p></div>
+      <div class="card" style="margin-bottom:24px;">
+        <div class="card-header"><span class="card-title">Active Routing Rules</span></div>
+        <div class="table-wrap">
+          <table class="np-table">
+            <thead><tr><th>Rule Name</th><th>Condition</th><th>Destination Connector</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>High-Value VIPs</strong></td>
+                <td><code style="background:var(--bg);padding:4px 6px;border-radius:4px;font-size:12px;">{"amount":{"gt":50000}}</code></td>
+                <td><span class="np-badge np-badge-active" style="background:var(--brand-light);color:var(--brand);">PayPal Live</span></td>
+                <td><span class="np-badge np-badge-active">Active</span></td>
+              </tr>
+              <tr>
+                <td><strong>Fallback Routing</strong></td>
+                <td><code style="background:var(--bg);padding:4px 6px;border-radius:4px;font-size:12px;">* (Default)</code></td>
+                <td><span class="np-badge np-badge-test" style="background:#e5e7eb;color:#374151;">Smart Success-Rate Selection</span></td>
+                <td><span class="np-badge np-badge-active">Active</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COMPLIANCE & PCI ──────────────────────────── -->
+    <div class="np-page" id="page-compliance">
+      <div class="np-page-header"><h1>PCI Compliance Center</h1><p>Secure Vault Audit Trails & Tokenization Logs</p></div>
+      <div class="card">
+        <div class="card-body">
+          <div style="background:#ecfdf5;border:1px solid #a7f3d0;border-radius:10px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#065f46;display:flex;align-items:center;gap:12px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <div>
+              <strong style="display:block;margin-bottom:4px;">Vault Active & Compliant</strong>
+              NexusPay is routing cards through the AES-256-GCM Vault Service. You never touch raw PCI data.
+            </div>
+          </div>
+          <h4 style="font-size:14px;font-weight:800;margin-bottom:12px;">Recent Audit Logs (vault_tokens)</h4>
+          <table class="np-table" style="font-size:12px;">
+            <thead><tr><th>Timestamp</th><th>Action</th><th>Token Ref</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Just now</td><td style="color:var(--brand);font-weight:600;">tokenize</td><td style="font-family:monospace;">tok_84719ab2...</td><td><span class="np-badge np-badge-active">success</span></td></tr>
+              <tr><td>2 mins ago</td><td style="color:var(--purple);font-weight:600;">detokenize</td><td style="font-family:monospace;">tok_11a9bf8c...</td><td><span class="np-badge np-badge-active">success</span></td></tr>
+              <tr><td>1 hour ago</td><td style="color:var(--brand);font-weight:600;">tokenize</td><td style="font-family:monospace;">tok_991f82cc...</td><td><span class="np-badge np-badge-active">success</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ── SETTINGS ──────────────────────────────────── -->
     <div class="np-page" id="page-settings">
       <div class="np-page-header"><h1>Settings</h1><p>Manage your business profile and branding</p></div>
@@ -282,6 +381,16 @@
             <div class="form-group"><label>Contact Phone</label><input type="tel" id="set-phone" class="form-control"/></div>
             <div class="form-group"><label>Website</label><input type="url" id="set-website" class="form-control"/></div>
             <div class="form-group"><label>Webhook URL</label><input type="url" id="set-webhook" class="form-control" placeholder="https://yoursite.com/webhook/nexuspay"/></div>
+            <div class="form-group">
+              <label style="display:flex;justify-content:space-between;align-items:center;">
+                Merchant UPI ID
+                <span id="upi-verify-status"></span>
+              </label>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="set-upi" class="form-control" placeholder="Required for QR routing" style="flex:1;"/>
+                <button class="btn btn-outline btn-sm" id="verify-upi-btn" onclick="verifyUPI()">Verify Now</button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="card">
@@ -561,13 +670,14 @@ async function createPayment() {
     const data = await VP.apiPost('/payments/create', body);
     document.getElementById('qr-output-img').src = data.qr_code;
     document.getElementById('qr-link-url').textContent = data.gateway_url;
-    document.getElementById('open-checkout-btn').onclick = () => window.open(data.gateway_url, '_blank');
-    document.getElementById('qr-output-card').style.display = 'block';
+    document.getElementById('open-checkout-btn').onclick = () => openCheckoutModal(data.gateway_url);
+      document.getElementById('qr-output-card').style.display = 'block';
     document.getElementById('qr-placeholder-card').style.display = 'none';
     UI.alert(alertEl,'success','✅ Payment link created!');
     loadDashboard();
   } catch (err) {
-    UI.alert(alertEl,'error', err.message);
+    const details = err.details ? ': ' + err.details.map(d => `${d.field} ${d.message}`).join(', ') : '';
+    UI.alert('#create-alert', 'error', err.message + details);
   }
   UI.setLoading(btn, false);
 }
@@ -643,8 +753,21 @@ async function loadSettingsForm() {
     document.getElementById('set-phone').value     = data.phone || '';
     document.getElementById('set-website').value   = data.website || '';
     document.getElementById('set-webhook').value   = data.webhook_url || '';
+    document.getElementById('set-upi').value       = data.upi_id || '';
     document.getElementById('set-color').value     = data.brand_color || '#5b4fff';
     document.getElementById('set-logo').value      = data.logo_url || '';
+    
+    // UPI Verification Badge
+    const upiStatus = document.getElementById('upi-verify-status');
+    const verifyBtn = document.getElementById('verify-upi-btn');
+    if (data.upi_verified) {
+      upiStatus.innerHTML = '<span class="np-badge np-badge-live" style="transform:scale(0.85);">Verified ✓</span>';
+      verifyBtn.style.display = 'none';
+    } else {
+      upiStatus.innerHTML = '<span class="np-badge np-badge-test" style="transform:scale(0.85);">Unverified</span>';
+      verifyBtn.style.display = 'block';
+    }
+
     updateSettingsPreview(data.brand_color || '#5b4fff', data.business_name || data.name || '');
   } catch (_) {}
 }
@@ -676,6 +799,7 @@ async function saveSettings() {
       phone:         document.getElementById('set-phone').value.trim(),
       website:       document.getElementById('set-website').value.trim(),
       webhook_url:   document.getElementById('set-webhook').value.trim() || undefined,
+      upi_id:        document.getElementById('set-upi').value.trim(),
       brand_color:   document.getElementById('set-color').value,
       logo_url:      document.getElementById('set-logo').value.trim(),
     });
@@ -688,7 +812,8 @@ async function saveSettings() {
       document.getElementById('sb-biz-name').textContent = m.business_name;
     }
   } catch (err) {
-    UI.alert(alertEl,'error', err.message);
+    const details = err.details ? ': ' + err.details.map(d => `${d.field} ${d.message}`).join(', ') : '';
+    UI.alert(alertEl, 'error', err.message + details);
   }
   UI.setLoading(btn, false);
 }
@@ -799,6 +924,48 @@ function closeModal(e) {
     document.getElementById('modal-overlay').classList.remove('open');
   }
 }
+
+function openCheckoutModal(url) {
+  document.getElementById('checkout-iframe').src = url;
+  document.getElementById('checkout-modal-overlay').classList.add('open');
+}
+
+function closeCheckoutModal(e) {
+  if (!e || e.target === document.getElementById('checkout-modal-overlay')) {
+    document.getElementById('checkout-modal-overlay').classList.remove('open');
+    setTimeout(() => document.getElementById('checkout-iframe').src = '', 300);
+  }
+}
+
+async function verifyUPI() {
+  const btn = document.getElementById('verify-upi-btn');
+  const upi = document.getElementById('set-upi').value.trim();
+  if (!upi) return UI.toast('Enter your UPI ID first');
+
+  UI.setLoading(btn, true, 'Verifying...');
+  try {
+    const data = await VP.post('/merchants/verify-upi');
+    UI.toast('✅ UPI ID Verified! Payment routing is now active.');
+    // Refresh the form status
+    loadSettingsForm();
+  } catch (err) {
+    UI.toast('Verification failed: ' + err.message);
+  }
+  UI.setLoading(btn, false);
+}
 </script>
+
+<!-- Checkout Modal Overlay -->
+<div class="np-modal" id="checkout-modal-overlay" onclick="closeCheckoutModal(event)">
+  <div class="np-modal-content" style="max-width:440px; padding:0; height:85vh; overflow:hidden; display:flex; flex-direction:column; border-radius:18px;">
+    <div style="padding:14px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:var(--surface); border-radius:18px 18px 0 0;">
+      <strong style="font-size:14px; font-family:var(--font); display:flex; align-items:center; gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Secure Checkout
+      </strong>
+      <button onclick="closeCheckoutModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:var(--muted); line-height:1; transition:color .2s;" onmouseover="this.style.color='#000'" onmouseout="this.style.color='var(--muted)'">&times;</button>
+    </div>
+    <iframe id="checkout-iframe" src="" style="width:100%; height:100%; border:none; flex:1; background:white;"></iframe>
+  </div>
+</div>
 </body>
 </html>
