@@ -262,3 +262,16 @@ textarea.form-control { resize: vertical; min-height: 90px; }
   .form-row { grid-template-columns: 1fr; }
   .np-stats { grid-template-columns: 1fr 1fr; }
 }
+/* ── Print Styles ────────────────────── */
+@media print {
+  .np-sidebar, .np-nav, .np-page-header button, .np-page-header p, aside, .btn { display: none !important; }
+  .np-layout { display: block; }
+  .np-main { padding: 0; background: white; color: black; }
+  .card { box-shadow: none; border: none; padding: 0; }
+  .np-page { display: block !important; }
+  .np-page:not(#page-guide) { display: none !important; }
+  body { background: white; }
+  h1, h2, h3 { color: black; }
+  p, li { color: #333; }
+  img { max-width: 100%; height: auto; break-inside: avoid; }
+}

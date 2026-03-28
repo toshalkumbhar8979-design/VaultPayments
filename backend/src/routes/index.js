@@ -14,6 +14,7 @@ const auth     = require('../controllers/auth.controller');
 const pay      = require('../controllers/payment.controller');
 const merchant = require('../controllers/merchant.controller');
 const sms      = require('../controllers/sms.controller');
+const webhookController  = require('../controllers/webhook.controller');
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 const authRouter = express.Router();
@@ -30,6 +31,7 @@ payRouter.get('/',                     authenticateApiKey, pay.listPayments);
 payRouter.get('/:payment_id',          authenticateApiKey, pay.getPayment);
 payRouter.post('/:payment_id/capture', authenticateApiKey, pay.capturePayment);
 payRouter.post('/:payment_id/refund',  authenticateApiKey, pay.refundPayment);
+payRouter.post('/:payment_id/sync',    authenticateApiKey, pay.syncPayment); // new
 
 // ─── Merchants ────────────────────────────────────────────────────────────────
 const merchantRouter = express.Router();
@@ -60,6 +62,7 @@ qrRouter.post('/generate', authenticateApiKey, async (req, res) => {
 
 // ─── Webhooks ─────────────────────────────────────────────────────────────────
 const webhookRouter = express.Router();
+webhookRouter.post('/:connectorId', webhookController.handleWebhook);
 webhookRouter.post('/payment', verifyWebhookSignature, (req, res) => {
   const { event } = req.body;
   logger.info(`Webhook received: ${event}`);

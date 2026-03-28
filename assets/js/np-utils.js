@@ -42,6 +42,12 @@ const VP = {
     return !!(this.token && this.merchant);
   },
 
+  /** Clear session and redirect to login */
+  logout() {
+    localStorage.clear(); // Clear all keys
+    window.location.href = (window.location.pathname.includes('/dashboard/') ? '../' : './') + 'login.html';
+  },
+
   /** Redirect to login if not authenticated */
   requireAuth() {
     if (!this.isLoggedIn) {

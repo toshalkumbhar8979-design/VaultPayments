@@ -1,6 +1,6 @@
 'use strict';
 
-require('dotenv').config();
+require('dotenv').config({ override: true });
 
 const express    = require('express');
 const helmet     = require('helmet');
@@ -27,7 +27,7 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc:   ["'self'","'unsafe-inline'"],
-      scriptSrc:  ["'self'"],
+      scriptSrc:  ["'self'", "'unsafe-inline'"],
       imgSrc:     ["'self'","data:","https:"],
     },
   },
@@ -56,6 +56,10 @@ app.use(cors({
   credentials:      true,
   maxAge:           86400,
 }));
+
+// ─── Static Files ────────────────────────────────────────────────────────────
+// Serve the entire project root as static files (Landing, Dashboard, Pay UI)
+app.use(express.static(path.join(__dirname, '..')));
 
 // ─── Body Parsing ────────────────────────────────────────────────────────────
 // Raw body for webhook signature verification BEFORE json parser

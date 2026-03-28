@@ -118,11 +118,12 @@ const createPayment = async (req, res) => {
       expires_at:     expiresAt,
     });
 
-    // Fixed: Using relative URL if FRONTEND_URL is missing or local, 
-    // to prevent iframe loading issues on live servers.
-    const gatewayUrl = process.env.FRONTEND_URL && !process.env.FRONTEND_URL.includes('localhost') 
-      ? `${process.env.FRONTEND_URL}/pay/?id=${paymentId}`
-      : `../pay/?id=${paymentId}`;
+    // Fixed: Return an absolute URL so that redirecting from another domain 
+    // (like the merchant store) works correctly.
+    const platformHost = process.env.FRONTEND_URL || `http://${req.get('host')}`;
+    const gatewayUrl   = `${platformHost}/pay/?id=${paymentId}`;
+
+    logger.info(`[PAYMENT] Created: ${paymentId} | URL: ${gatewayUrl}`);
 
     logger.info(`Payment created: ${paymentId} | ${amountFmt} | connector: ${switchResult.connectorName} | merchant: ${merchantId}`);
 
@@ -163,6 +164,28 @@ const getCheckoutData = async (req, res) => {
     }
     if (payment.status === PAYMENT_STATUS.CAPTURED) {
       return sendError(res, 409, 'Payment already completed', 'PAYMENT_ALREADY_CAPTURED');
+    }
+
+    // New: Trigger an internal sync if the payment is in a 'processing' state.
+    // This allows the checkout UI to see the status update as soon as the 
+    // connector reports success, without waiting for an external webhook.
+    if ([PAYMENT_STATUS.CREATED, PAYMENT_STATUS.PROCESSING, 'authorized', 'requires_action'].includes(payment.status)) {
+        try {
+            const syncResult = await switchService.checkPaymentStatus(payment.connector_name, payment.connector_ref);
+            if (syncResult && syncResult.status !== payment.status) {
+                logger.info(`[AUTO-SYNC] Payment ${payment.id} status update: ${syncResult.status}`);
+                const capturedAt = syncResult.status === PAYMENT_STATUS.CAPTURED ? new Date().toISOString() : null;
+                await payments.update(payment.id, { 
+                    status: syncResult.status, 
+                    captured_at: capturedAt,
+                    updated_at: new Date().toISOString()
+                });
+                // Update local 'payment' object for the subsequent response
+                payment.status = syncResult.status;
+            }
+        } catch (syncErr) {
+            logger.warn(`[AUTO-SYNC] Status check failed for ${payment.id}: ${syncErr.message}`);
+        }
     }
 
     const merchant = await merchants.findById(payment.merchant_id);
@@ -300,6 +323,48 @@ const refundPayment = async (req, res) => {
   return sendSuccess(res, 200, 'Refund initiated', { payment_id: payment.id, status: 'refunded', refunded_at: refundedAt });
 };
 
+// POST /payments/:id/sync
+const syncPayment = async (req, res) => {
+  try {
+    const payment = await payments.findById(req.params.payment_id);
+    if (!payment || payment.merchant_id !== req.merchantId) {
+      return sendError(res, 404, 'Payment not found');
+    }
+
+    // Only sync if not already captured/finalized
+    if ([PAYMENT_STATUS.CAPTURED, PAYMENT_STATUS.FAILED].includes(payment.status)) {
+        return sendSuccess(res, 200, 'Payment already finalized', { status: payment.status });
+    }
+
+    // Call the switch service to check status at the connector
+    const result = await switchService.checkPaymentStatus(payment.connector_name, payment.connector_ref);
+    
+    if (result && result.status !== payment.status) {
+        logger.info(`[SYNC] Payment ${payment.id} status changed: ${payment.status} -> ${result.status}`);
+        
+        const capturedAt = result.status === PAYMENT_STATUS.CAPTURED ? new Date().toISOString() : null;
+        await payments.update(payment.id, { 
+            status: result.status, 
+            captured_at: capturedAt,
+            updated_at: new Date().toISOString()
+        });
+
+        // Trigger merchant webhook if captured
+        if (result.status === PAYMENT_STATUS.CAPTURED && req.merchant.webhook_url) {
+            fireWebhook(req.merchant, 'payment.captured', { ...payment, status: result.status }).catch(logger.error);
+        }
+    }
+
+    return sendSuccess(res, 200, 'Payment synced', { 
+        payment_id: payment.id, 
+        status: result.status || payment.status 
+    });
+  } catch (err) {
+    logger.error('Sync error:', err);
+    return sendError(res, 500, 'Sync failed');
+  }
+};
+
 async function fireWebhook(merchant, event, data) {
   const payload = JSON.stringify({ event, data, timestamp: Date.now() });
   const sig = signPayload(payload, merchant.webhook_secret);
@@ -316,4 +381,4 @@ async function fireWebhook(merchant, event, data) {
   });
 }
 
-module.exports = { createPayment, getCheckoutData, getPayment, listPayments, capturePayment, refundPayment };
+module.exports = { createPayment, getCheckoutData, getPayment, listPayments, capturePayment, refundPayment, syncPayment };

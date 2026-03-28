@@ -99,6 +99,14 @@ function togglePassword() {
   inp.type = inp.type === 'password' ? 'text' : 'password';
 }
 
+// Add Enter key support
+document.getElementById('password').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('formLogin').dispatchEvent(new Event('submit'));
+  }
+});
+
 // Redirect if already logged in
 if (VP.isLoggedIn) {
   window.location.href = './dashboard/index.html';

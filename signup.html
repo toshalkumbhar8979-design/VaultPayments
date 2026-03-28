@@ -419,14 +419,26 @@ async function submitSignup() {
 
     goStep(4);
   } catch (err) {
-    let msg = err.message || 'Registration failed';
-    if (err.details && Array.isArray(err.details)) {
-      msg = err.details.map(d => d.message).join('. ');
-    }
-    UI.alert(alert, 'error', msg);
+    UI.alert(alert, 'error', err.message || 'Signup failed. Please try again.');
     UI.setLoading(btn, false);
   }
 }
+
+// Add Enter key support
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const currentStep = document.querySelector('.step-page.active');
+      const submitBtn = currentStep.querySelector('button.btn-primary:not(#submit-btn)');
+      if (submitBtn) {
+        submitBtn.click();
+      } else if (currentStep.id === 'step3') {
+        submitSignup();
+      }
+    }
+  });
+});
 
 // Redirect if already logged in
 if (VP.isLoggedIn) window.location.href = './dashboard/index.html';

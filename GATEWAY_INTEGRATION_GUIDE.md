@@ -102,4 +102,23 @@ app.post('/webhook/nexuspay', express.raw({ type: 'application/json' }), (req, r
 });
 ```
 
+## Live Demo Store 🛒
+
+We've built a complete, working example of an e-commerce store integrated with NexusPay. You can find it in the [`/demo-store`](./demo-store/) directory of this repository.
+
+### Getting Started with the Demo:
+1.  **Copy the SDK**: Ensure `sdk/node/nexuspay.js` is accessible to your project.
+2.  **Start your NexusPay Backend**: The demo expects the API to be running at `http://localhost:5000`.
+3.  **Run the Demo Store**:
+    ```bash
+    cd demo-store
+    npm install express
+    node server.js
+    ```
+4.  **Test the Flow**: Open `http://localhost:3000` in your browser.
+
+The demo includes a beautiful product page, a minimal Express server using the SDK, and success/webhook handlers. It's the fastest way to understand the full integration life-cycle.
+
+---
+
 You are now fully integrated with NexusPay! You can find pre-built SDKs for Node, Python, and PHP inside the `/sdk/` folder of the NexusPay repository.

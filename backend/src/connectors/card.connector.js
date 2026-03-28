@@ -198,10 +198,22 @@ class CardSimulatorConnector extends BaseConnector {
 
   /**
    * Get status of a payment.
+   * In the simulator, we automatically transition 'authorized' to 'captured'
+   * after 5 seconds to simulate real-world processing.
    */
   async getStatus(connectorRef) {
     const auth = this._authorizations.get(connectorRef);
     if (!auth) return { status: 'not_found', rawResponse: {} };
+
+    // Simulation: if authorized and more than 5 seconds have passed, auto-capture
+    const CREATED_MS = parseInt(connectorRef.split('_').pop());
+    const ELAPSED_MS = Date.now() - (CREATED_MS || 0);
+
+    if (auth.status === 'authorized' && ELAPSED_MS > 5000) {
+        logger.info(`[CARD] Auto-capturing simulated payment: ${connectorRef} | Wait: ${ELAPSED_MS}ms`);
+        auth.status = 'captured';
+    }
+
     return { status: auth.status, amount: auth.amount, rawResponse: auth };
   }
 

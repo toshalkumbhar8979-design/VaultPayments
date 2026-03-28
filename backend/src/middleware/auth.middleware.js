@@ -43,14 +43,18 @@ const authenticateApiKey = async (req, res, next) => {
 
     const prefix   = apiKey.substring(0, 16);
     const merchant = await merchants.findByKeyPrefix(prefix);
-    if (!merchant) return sendError(res, 401, 'Invalid API key', 'UNAUTHORIZED');
+    
+    if (!merchant) {
+      return sendError(res, 401, 'Invalid API key', 'UNAUTHORIZED');
+    }
+    
     if (merchant.status !== 'active') return sendError(res, 403, 'Account suspended', 'FORBIDDEN');
-
     const isLive   = apiKey.startsWith('vp_live_');
     const storedHash = isLive ? merchant.api_key_live_hash : merchant.api_key_test_hash;
     const valid    = await bcrypt.compare(apiKey, storedHash);
+    
     if (!valid) {
-      logger.warn(`Invalid API key attempt for prefix: ${prefix}`);
+      logger.warn(`[AUTH] Hash mismatch for prefix: ${prefix}`);
       return sendError(res, 401, 'Invalid API key', 'UNAUTHORIZED');
     }
 

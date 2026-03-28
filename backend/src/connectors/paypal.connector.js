@@ -202,16 +202,39 @@ class PayPalConnector extends BaseConnector {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      return { status: data.status, rawResponse: data };
+      
+      // Standardize NexusPay status
+      let status = 'pending';
+      if (data.status === 'COMPLETED') status = 'captured';
+      else if (data.status === 'APPROVED') status = 'authorized';
+      else if (data.status === 'VOIDED') status = 'voided';
+      else if (['PAYER_ACTION_REQUIRED', 'CREATED'].includes(data.status)) status = 'requires_action';
+
+      return { status, rawResponse: data };
     } catch (err) {
       return { status: 'error', rawResponse: { error: err.message } };
     }
   }
 
   async verifyWebhook(payload, signature) {
-    // For production IPN / Webhooks we just perform logical checking
-    // Full IPN verify involves '_notify-validate' back to Paypal
-    return { verified: true, event: payload.event_type || 'unknown', data: payload };
+    // Standard PayPal Webhook verification would happen here.
+    // For now, we logically verify the event type and mapping.
+    const eventType = payload.event_type || 'unknown';
+    const statusMap = {
+        'PAYMENT.CAPTURE.COMPLETED': 'captured',
+        'PAYMENT.CAPTURE.DENIED':    'failed',
+        'PAYMENT.CAPTURE.REFUNDED':  'refunded'
+    };
+
+    return { 
+        verified: true, // In production, use paypal-rest-sdk to verify sig
+        event: eventType, 
+        data: {
+            id: payload.resource?.id,
+            status: statusMap[eventType] || 'processing',
+            raw: payload
+        } 
+    };
   }
 
   async healthCheck() {

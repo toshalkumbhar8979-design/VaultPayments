@@ -127,12 +127,25 @@ class UPIConnector extends BaseConnector {
 
   /**
    * Get the status of a UPI payment.
+   * In this simulator, we automatically transition 'pending' to 'captured'
+   * after 8 seconds to simulate the time it takes for a user to scan and pay.
    */
   async getStatus(connectorRef) {
-    // In a real system, this would check with the UPI gateway
+    // Simulation: if more than 8 seconds have passed since generation, auto-capture
+    const CREATED_MS = parseInt(connectorRef.split('_').pop());
+    const ELAPSED_MS = Date.now() - (CREATED_MS || 0);
+
+    if (ELAPSED_MS > 8000) {
+        logger.info(`[UPI] Auto-confirming simulated payment: ${connectorRef} | Wait: ${ELAPSED_MS}ms`);
+        return {
+            status: 'captured',
+            rawResponse: { connectorRef, confirmedAt: new Date().toISOString(), method: 'simulated_upi' }
+        };
+    }
+
     return {
       status:      'pending',
-      rawResponse: { connectorRef, checkedAt: new Date().toISOString() },
+      rawResponse: { connectorRef, checkedAt: new Date().toISOString(), elapsedMs: ELAPSED_MS },
     };
   }
 

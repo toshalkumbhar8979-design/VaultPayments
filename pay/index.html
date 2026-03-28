@@ -784,11 +784,19 @@
                     </div>
                 </div>
 
-                <div class="divider">or already paid</div>
+                <div class="divider">or already paid?</div>
 
-                <button class="btn btn-brand" onclick="switchTab('sms',document.querySelectorAll('.tab')[1])">
-                    I've Paid — Confirm via SMS
+                <button class="btn btn-brand" onclick="checkStatus(true)" id="verify-btn">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    I've Paid — Verify Now
                 </button>
+
+                <p style="text-align:center; font-size:12px; color:#9ca3af; margin-top:12px;"> 
+                    Still stuck? <a href="#" onclick="switchTab('sms',document.querySelectorAll('.tab')[1]);return false;" style="color:var(--brand); text-decoration:none; font-weight:600;">Confirm via SMS</a>
+                </p>
             </div>
 
             <!-- SMS Tab -->
@@ -1004,16 +1012,41 @@
         }
 
         // ── Poll Status ────────────────────────────────────────────────────────────
-        async function checkStatus() {
+        async function checkStatus(isManual = false) {
             if (!paymentData?.payment_id) return;
+            const verifyBtn = document.getElementById('verify-btn');
+            
+            if (isManual) {
+                verifyBtn.disabled = true;
+                verifyBtn.textContent = 'Verifying...';
+            }
+
             try {
+                // We call the standard public checkout endpoint.
+                // It has been updated to trigger an internal sync with the connector.
                 const res = await fetch(`${API}/payments/checkout/${paymentData.payment_id}`);
                 const json = await res.json();
+                
                 if (json.success && json.data.status === 'captured') {
                     clearInterval(pollInterval);
                     showSuccess();
+                    return;
                 }
-            } catch (_) { }
+
+                if (isManual) {
+                    // If manual check didn't find a capture yet, provide feedback
+                    setTimeout(() => {
+                        verifyBtn.disabled = false;
+                        verifyBtn.textContent = "I've Paid — Verify Now";
+                    }, 500);
+                }
+            } catch (err) { 
+                console.error('Check status error:', err);
+                if (isManual) {
+                    verifyBtn.disabled = false;
+                    verifyBtn.textContent = "I've Paid — Verify Now";
+                }
+            }
         }
 
         // ── Show Success ───────────────────────────────────────────────────────────
