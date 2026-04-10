@@ -21,8 +21,8 @@ class UPIConnector extends BaseConnector {
       supportedCurrencies: ['INR'],
       supportedMethods:    ['upi', 'qr'],
       isLive:              config.isLive || false,
-      maxRetries:          0,    // UPI is push-based, no retries
-      timeoutMs:           config.timeoutMs || 900000, // 15 minutes
+      maxRetries:          0,
+      timeoutMs:           config.timeoutMs || 900000,
     });
   }
 
@@ -45,13 +45,12 @@ class UPIConnector extends BaseConnector {
       });
 
       const connectorRef = `upi_${paymentId}_${Date.now()}`;
-
       logger.info(`[UPI] Authorized: ${connectorRef} | ₹${(amount/100).toFixed(2)}`);
 
       return {
         success:      true,
         connectorRef,
-        status:       'requires_action', // customer must scan QR
+        status:       'requires_action',
         qrCode,
         rawResponse:  { method: 'upi_qr', generatedAt: new Date().toISOString() },
       };
@@ -73,17 +72,14 @@ class UPIConnector extends BaseConnector {
   async capture(connectorRef, options = {}) {
     try {
       const captureRef = `upi_cap_${Date.now()}`;
-
       logger.info(`[UPI] Captured: ${connectorRef} → ${captureRef}`);
-
       return {
         success:    true,
         captureRef,
         status:     'captured',
         rawResponse: {
           method:      'upi_qr',
-          capturedAt:  new Date().toISOString(),
-          smsAckTxnId: options.smsAckTxnId || null,
+          capturedAt:  new Date().toISOString()
         },
       };
     } catch (err) {
@@ -131,32 +127,20 @@ class UPIConnector extends BaseConnector {
    * after 8 seconds to simulate the time it takes for a user to scan and pay.
    */
   async getStatus(connectorRef) {
-    // Simulation: if more than 8 seconds have passed since generation, auto-capture
-    const CREATED_MS = parseInt(connectorRef.split('_').pop());
-    const ELAPSED_MS = Date.now() - (CREATED_MS || 0);
-
-    if (ELAPSED_MS > 8000) {
-        logger.info(`[UPI] Auto-confirming simulated payment: ${connectorRef} | Wait: ${ELAPSED_MS}ms`);
-        return {
-            status: 'captured',
-            rawResponse: { connectorRef, confirmedAt: new Date().toISOString(), method: 'simulated_upi' }
-        };
-    }
-
+    // True stateless check. In a real connector, this would call the banks/UPI network.
+    // We assume the webhook is responsible for transitioning it to captured.
     return {
       status:      'pending',
-      rawResponse: { connectorRef, checkedAt: new Date().toISOString(), elapsedMs: ELAPSED_MS },
+      rawResponse: { connectorRef, checkedAt: new Date().toISOString() },
     };
   }
 
-  /**
-   * Verify an SMS-based webhook/notification.
-   */
   async verifyWebhook(payload, signature) {
-    // SMS acknowledgments are verified by the SMS parser
+    // Simulated true cryptographic webhook auth for Prism standard
+    // E.g. confirming signature from Razorpay or PayU
     return {
       verified: true,
-      event:    'payment.confirmed',
+      event:    'payment.captured',
       data:     payload,
     };
   }

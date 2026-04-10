@@ -11,6 +11,8 @@ const UPIConnector          = require('./upi.connector');
 const CardSimulatorConnector = require('./card.connector');
 const BankTransferConnector  = require('./bank.connector');
 const PayPalConnector        = require('./paypal.connector');
+const InternalProcessorConnector = require('./internal_processor');
+const NativeAcquirer         = require('./native-acquirer');
 const logger                 = require('../utils/logger');
 
 // ── Registry ────────────────────────────────────────────────────────────
@@ -86,12 +88,17 @@ async function healthCheckAll() {
 // ── Initialize Default Connectors ───────────────────────────────────────
 
 function initDefaults() {
+  // PRIMARY: NexusPay Native Processor (the PSP core)
+  register(new NativeAcquirer({ isLive: process.env.NODE_ENV === 'production' }));
+
+  // FALLBACK CONNECTORS: Used when native acquirer fails or for specific methods
   register(new UPIConnector({ isLive: process.env.NODE_ENV === 'production' }));
   register(new CardSimulatorConnector());
   register(new BankTransferConnector());
   register(new PayPalConnector({ isLive: process.env.NODE_ENV === 'production' }));
+  register(new InternalProcessorConnector());
 
-  logger.info(`🔌 ${_connectors.size} connectors initialized`);
+  logger.info(`🔌 ${_connectors.size} connectors initialized (Native Acquirer = PRIMARY)`);
 }
 
 module.exports = {

@@ -1,0 +1,181 @@
+syntax = "proto3";
+
+package nexuspay;
+
+option go_package = "github.com/nexuspay/proto/nexuspay";
+
+// ============================================================================
+// NexusPay gRPC Service Definitions
+// Internal communication between the Vault, Processor, and Settlement Worker
+// ============================================================================
+
+// ── Ledger Service ──────────────────────────────────────────────────────────
+
+service LedgerService {
+  // Record a payment capture in the double-entry ledger
+  rpc RecordPayment(RecordPaymentRequest) returns (LedgerResponse);
+  
+  // Record a refund (reverse entries)
+  rpc RecordRefund(RecordRefundRequest) returns (LedgerResponse);
+  
+  // Freeze funds for settlement
+  rpc FreezeFunds(FreezeRequest) returns (LedgerResponse);
+  
+  // Release frozen funds after payout
+  rpc ReleaseFunds(ReleaseRequest) returns (LedgerResponse);
+  
+  // Get merchant balance
+  rpc GetBalance(BalanceRequest) returns (BalanceResponse);
+  
+  // Get ledger entries for a payment
+  rpc GetPaymentEntries(PaymentEntriesRequest) returns (EntriesResponse);
+}
+
+// ── Settlement Service ──────────────────────────────────────────────────────
+
+service SettlementService {
+  // Trigger a settlement batch for a merchant
+  rpc TriggerSettlement(SettlementRequest) returns (SettlementResponse);
+  
+  // Get batch status
+  rpc GetBatchStatus(BatchStatusRequest) returns (BatchStatusResponse);
+  
+  // List settlement batches for a merchant
+  rpc ListBatches(ListBatchesRequest) returns (ListBatchesResponse);
+  
+  // Process payout for a batch
+  rpc ProcessPayout(PayoutRequest) returns (PayoutResponse);
+}
+
+// ── Message Definitions ─────────────────────────────────────────────────────
+
+message RecordPaymentRequest {
+  string payment_id = 1;
+  string merchant_id = 2;
+  int64 gross_amount = 3;       // Minor units (paise)
+  int64 fee_amount = 4;
+  int64 gst_on_fee = 5;
+  string currency = 6;
+  string idempotency_key = 7;
+  string description = 8;
+}
+
+message RecordRefundRequest {
+  string payment_id = 1;
+  string merchant_id = 2;
+  int64 refund_amount = 3;
+  int64 fee_refund_amount = 4;
+  string currency = 5;
+  string idempotency_key = 6;
+}
+
+message LedgerResponse {
+  bool success = 1;
+  string transaction_id = 2;
+  string message = 3;
+  repeated LedgerEntry entries = 4;
+}
+
+message LedgerEntry {
+  string id = 1;
+  string transaction_id = 2;
+  string account_id = 3;
+  string entry_type = 4;        // "DEBIT" or "CREDIT"
+  int64 amount = 5;
+  int64 running_balance = 6;
+  string description = 7;
+  string created_at = 8;
+}
+
+message FreezeRequest {
+  string merchant_id = 1;
+  int64 amount = 2;
+  string currency = 3;
+}
+
+message ReleaseRequest {
+  string merchant_id = 1;
+  int64 amount = 2;
+  string currency = 3;
+}
+
+message BalanceRequest {
+  string merchant_id = 1;
+  string currency = 2;
+}
+
+message BalanceResponse {
+  int64 total_balance = 1;
+  int64 frozen_funds = 2;
+  int64 available_balance = 3;
+  bool exists = 4;
+}
+
+message PaymentEntriesRequest {
+  string payment_id = 1;
+}
+
+message EntriesResponse {
+  repeated LedgerEntry entries = 1;
+}
+
+// ── Settlement Messages ─────────────────────────────────────────────────────
+
+message SettlementRequest {
+  string merchant_id = 1;
+  string batch_date = 2;        // YYYY-MM-DD
+  string payout_method = 3;     // "IMPS", "NEFT", "RTGS", "ACH"
+}
+
+message SettlementResponse {
+  bool success = 1;
+  string batch_id = 2;
+  int64 total_amount = 3;
+  int64 net_payout = 4;
+  int32 payment_count = 5;
+  string status = 6;
+  string message = 7;
+}
+
+message BatchStatusRequest {
+  string batch_id = 1;
+}
+
+message BatchStatusResponse {
+  string batch_id = 1;
+  string merchant_id = 2;
+  string batch_date = 3;
+  int64 total_amount = 4;
+  int64 fee_deducted = 5;
+  int64 net_payout = 6;
+  int32 payment_count = 7;
+  string status = 8;
+  string payout_ref = 9;
+  string created_at = 10;
+  string completed_at = 11;
+}
+
+message ListBatchesRequest {
+  string merchant_id = 1;
+  int32 limit = 2;
+}
+
+message ListBatchesResponse {
+  repeated BatchStatusResponse batches = 1;
+}
+
+message PayoutRequest {
+  string batch_id = 1;
+  string bank_account = 2;
+  string ifsc_code = 3;
+  string beneficiary_name = 4;
+  int64 amount = 5;
+  string payout_method = 6;    // "IMPS", "NEFT"
+}
+
+message PayoutResponse {
+  bool success = 1;
+  string payout_ref = 2;
+  string status = 3;
+  string message = 4;
+}

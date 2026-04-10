@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Integrations & SDKs — VaultPayments</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=Playfair+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000;
+      --card: rgba(255,255,255,0.02);
+      --border: rgba(255,255,255,0.06);
+      --white: #ffffff;
+      --muted: rgba(255,255,255,0.5);
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --serif: 'Playfair Display', serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font); background: var(--bg); color: var(--white); -webkit-font-smoothing: antialiased; line-height: 1.5; overflow-x: hidden; }
+    a { text-decoration: none; color: inherit; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; z-index: 100; transition: all 0.3s; }
+    .nav-logo { display:flex; align-items:center; gap: 12px; font-weight:800; font-size:18px; letter-spacing:-0.5px; }
+    .nav-logo-mark { width:28px; height:28px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; }
+    .nav-logo-mark svg { width:16px; height:16px; stroke:#000; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .nav-logo-text { color: var(--white); }
+    .nav-links { display:flex; gap: 32px; align-items:center; }
+    .nav-links a { font-size: 14px; font-weight: 500; color: var(--muted); transition: color 0.2s; }
+    .nav-links a:hover { color: var(--white); }
+    .btn-nav-primary { padding: 10px 24px; background: #fff; border-radius: 100px; color: #000; font-size: 14px; font-weight: 700; transition: transform 0.3s; }
+    .btn-nav-primary:hover { transform: scale(1.02); }
+
+    /* HEADER */
+    header { padding: 160px 24px 80px; text-align: center; position: relative; }
+    header::before { content:''; position:absolute; top: -50px; left:50%; transform:translateX(-50%); width: 800px; height: 400px; background: radial-gradient(ellipse, rgba(255,255,255,0.05) 0%, transparent 60%); filter:blur(40px); pointer-events:none; z-index:-1; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 24px; }
+    .eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--muted); }
+    h1 { font-size: clamp(48px, 6vw, 72px); font-weight: 700; letter-spacing: -0.04em; line-height: 1.1; margin-bottom: 24px; }
+    h1 em { font-family: var(--serif); font-weight: 400; color: #b0b0b0; }
+    .header-sub { font-size: 18px; color: var(--muted); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+    /* LAYOUT */
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 120px; }
+    .section-title { font-size: 24px; font-weight: 600; margin-bottom: 32px; letter-spacing: -0.02em; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 64px; }
+
+    /* CARDS */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: flex; align-items: center; justify-content: space-between; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); position: relative; overflow: hidden; }
+    .card::before { content:''; position:absolute; top:0; left:0; width:100%; height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); opacity:0; transition: opacity 0.3s; }
+    .card:hover { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); transform: translateY(-3px); }
+    .card:hover::before { opacity: 1; }
+    
+    .card-left { display: flex; align-items: center; gap: 16px; }
+    .card-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--white); }
+    .card-info h3 { font-size: 16px; font-weight: 600; color: var(--white); }
+    .card-info p { font-size: 13px; color: var(--muted); margin-top: 4px; }
+    
+    .card-link { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--muted); transition: color 0.2s; }
+    .card:hover .card-link { color: var(--white); }
+
+    /* ALERT */
+    .alert-box { max-width: 800px; margin: 0 auto 120px; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.2); padding: 32px; border-radius: 12px; text-align: center; }
+    .alert-box p { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
+    .btn-outline { display: inline-block; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 12px 28px; border-radius: 100px; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) { nav { padding: 16px 24px; } .nav-links { display: none; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="./" class="nav-logo">
+    <div class="nav-logo-mark"><svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z"/><path d="M12 22V12M3 7l9 5 9-5"/></svg></div>
+    <span class="nav-logo-text">NexusPay</span>
+  </a>
+  <div class="nav-links">
+    <a href="./#features">Features</a>
+    <a href="./#pricing">Pricing</a>
+    <a href="./integrations.html">Integrations</a>
+    <a href="./dashboard/">Dashboard</a>
+  </div>
+  <div>
+    <a href="./login.html" style="font-size:14px;font-weight:600;color:#fff;margin-right:24px;">Sign In</a>
+    <a href="./signup.html" class="btn-nav-primary">Get Started</a>
+  </div>
+</nav>
+
+<header>
+  <div class="eyebrow">Connect Everything</div>
+  <h1>Platform <em>Integrations</em></h1>
+  <p class="header-sub">Official SDKs, eCommerce plugins, and code snippets to get your platform accepting payments instantly.</p>
+</header>
+
+<div class="container">
+
+  <!-- PLATFORM SDKS -->
+  <h2 class="section-title">Platform SDKs</h2>
+  <div class="grid">
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🌐</div>
+        <div class="card-info"><h3>Web Integration</h3><p>checkout.js / Direct API</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🤖</div>
+        <div class="card-info"><h3>Android SDK</h3><p>Kotlin & Java</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🍎</div>
+        <div class="card-info"><h3>iOS SDK</h3><p>Swift & Objective-C</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">⚛️</div>
+        <div class="card-info"><h3>React Native</h3><p>Cross-platform mobile</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🐦</div>
+        <div class="card-info"><h3>Flutter</h3><p>Dart plugin</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">📱</div>
+        <div class="card-info"><h3>Capacitor / Ionic</h3><p>Hybrid plugins</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+  </div>
+
+  <!-- SERVER INTEGRATIONS -->
+  <h2 class="section-title">Server SDKs</h2>
+  <div class="grid">
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">JS</div>
+        <div class="card-info"><h3>Node.js</h3><p>npm install nexuspay</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">PY</div>
+        <div class="card-info"><h3>Python</h3><p>pip install nexuspay</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">PHP</div>
+        <div class="card-info"><h3>PHP</h3><p>composer require nexus/php</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">GO</div>
+        <div class="card-info"><h3>Go</h3><p>go get github.com/nexuspay/go</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">#</div>
+        <div class="card-info"><h3>.NET</h3><p>NuGet package manager</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">RB</div>
+        <div class="card-info"><h3>Ruby</h3><p>gem install nexuspay</p></div>
+      </div>
+      <div class="card-link">Reference &rarr;</div>
+    </a>
+  </div>
+
+  <!-- E-COMMERCE -->
+  <h2 class="section-title">eCommerce Plugins</h2>
+  <div class="grid">
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🛒</div>
+        <div class="card-info"><h3>WooCommerce</h3><p>Official WordPress Plugin</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">🛍️</div>
+        <div class="card-info"><h3>Shopify</h3><p>Official Connector</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">📦</div>
+        <div class="card-info"><h3>Magento</h3><p>Adobe Commerce</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">W</div>
+        <div class="card-info"><h3>WIX</h3><p>Wix Stores integration</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">P</div>
+        <div class="card-info"><h3>Prestashop</h3><p>Direct integration</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">CS</div>
+        <div class="card-info"><h3>CS Cart</h3><p>Marketplace engine</p></div>
+      </div>
+      <div class="card-link">Docs &rarr;</div>
+    </a>
+  </div>
+
+  <!-- CHANNEL PARTNERS -->
+  <h2 class="section-title">Channel Partners & SaaS</h2>
+  <div class="grid">
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">Z</div>
+        <div class="card-info"><h3>Zoho Suite</h3><p>Checkout, Invoice, Books, Subs</p></div>
+      </div>
+      <div class="card-link">Guide &rarr;</div>
+    </a>
+    <a href="#" class="card">
+      <div class="card-left">
+        <div class="card-icon">QB</div>
+        <div class="card-info"><h3>Intuit QuickBooks</h3><p>Acconuting sync</p></div>
+      </div>
+      <div class="card-link">Guide &rarr;</div>
+    </a>
+  </div>
+
+  <div class="alert-box">
+    <p>Note: If the required platform/plugin is not listed above, you can securely integrate it on your own until an official SDK is released.</p>
+    <a href="#" class="btn-outline">View Manual Checkout Integration</a>
+  </div>
+
+</div>
+</body>
+</html>

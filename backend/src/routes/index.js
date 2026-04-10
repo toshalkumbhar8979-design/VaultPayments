@@ -13,7 +13,8 @@ const logger = require('../utils/logger');
 const auth     = require('../controllers/auth.controller');
 const pay      = require('../controllers/payment.controller');
 const merchant = require('../controllers/merchant.controller');
-const sms      = require('../controllers/sms.controller');
+const routing  = require('../controllers/routing.controller');
+const fraud    = require('../controllers/fraud.controller');
 const webhookController  = require('../controllers/webhook.controller');
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -26,12 +27,14 @@ authRouter.post('/forgot-password', authRateLimiter, auth.forgotPassword);
 // ─── Payments ─────────────────────────────────────────────────────────────────
 const payRouter = express.Router();
 payRouter.get('/checkout/:payment_id', pay.getCheckoutData);           // public
-payRouter.post('/create',              authenticateApiKey, paymentRateLimiter, validate(schemas.createPayment), pay.createPayment);
+payRouter.post('/',                    authenticateApiKey, paymentRateLimiter, validate(schemas.createPayment), pay.createPayment); // Hyperswitch standard
+payRouter.post('/create',              authenticateApiKey, paymentRateLimiter, validate(schemas.createPayment), pay.createPayment); // Legacy
 payRouter.get('/',                     authenticateApiKey, pay.listPayments);
 payRouter.get('/:payment_id',          authenticateApiKey, pay.getPayment);
 payRouter.post('/:payment_id/capture', authenticateApiKey, pay.capturePayment);
 payRouter.post('/:payment_id/refund',  authenticateApiKey, pay.refundPayment);
 payRouter.post('/:payment_id/sync',    authenticateApiKey, pay.syncPayment); // new
+payRouter.post('/:payment_id/sandbox-capture', pay.sandboxCapture);
 
 // ─── Merchants ────────────────────────────────────────────────────────────────
 const merchantRouter = express.Router();
@@ -40,10 +43,6 @@ merchantRouter.put('/me',        authenticateJWT, validate(schemas.updateMerchan
 merchantRouter.post('/verify-upi', authenticateJWT, merchant.verifyUPI);
 merchantRouter.get('/dashboard', authenticateJWT, merchant.getDashboard);
 
-// ─── SMS ──────────────────────────────────────────────────────────────────────
-const smsRouter = express.Router();
-smsRouter.post('/parse',   authenticateApiKey, smsRateLimiter, validate(schemas.parseSms), sms.parseSms);
-smsRouter.post('/webhook', sms.smsWebhook);
 
 // ─── QR ───────────────────────────────────────────────────────────────────────
 const qrRouter = express.Router();
@@ -69,11 +68,25 @@ webhookRouter.post('/payment', verifyWebhookSignature, (req, res) => {
   res.status(200).json({ received: true });
 });
 
+// ─── Routing ──────────────────────────────────────────────────────────────────
+const routingRouter = express.Router();
+routingRouter.get('/rules',    authenticateJWT, routing.getRules);
+routingRouter.post('/rules',   authenticateJWT, routing.updateRule);
+routingRouter.delete('/rules/:id', authenticateJWT, routing.deleteRule);
+
+// ─── Fraud ────────────────────────────────────────────────────────────────────
+const fraudRouter = express.Router();
+fraudRouter.get('/stats',    authenticateJWT, fraud.getFraudStats);
+fraudRouter.get('/review',   authenticateJWT, fraud.getReviewQueue);
+fraudRouter.post('/evaluate', authenticateApiKey, fraud.evaluatePayment);
+fraudRouter.post('/rules',   authenticateJWT, fraud.updateRule);
+
 module.exports = {
   authRoutes:     authRouter,
   paymentRoutes:  payRouter,
   merchantRoutes: merchantRouter,
-  smsRoutes:      smsRouter,
   qrRoutes:       qrRouter,
+  routingRoutes:  routingRouter,
+  fraudRoutes:    fraudRouter,
   webhookRoutes:  webhookRouter,
 };

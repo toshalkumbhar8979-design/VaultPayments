@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "algorithmic-art": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "7c446629c20a537aba3496490550bbfddf71b3bb71904c9c0056c9daa025a330"
+    },
+    "authenticate-wallet": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "0043fa9f4a172fe87b22aa698c6fcf866efaebc71a94ba53333c480915c302c5"
+    },
+    "browser-use": {
+      "source": "browser-use/browser-use",
+      "sourceType": "github",
+      "computedHash": "24c08ebcec599f98eca1fbaa0fb67483ac7926347e69de16f1c5e423b49e6145"
+    },
+    "email-and-password-best-practices": {
+      "source": "better-auth/skills",
+      "sourceType": "github",
+      "computedHash": "7786d722fa682b3d6a99793e73a9d51b59becefa595676134a993020633e068f"
+    },
+    "monetize-service": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "9a47829fa5322ee6a92ccf07f6ab298bc39717e5a3334fb016e0617a7398f124"
+    },
+    "pay-for-service": {
+      "source": "coinbase/agentic-wallet-skills",
+      "sourceType": "github",
+      "computedHash": "fdaae52c1397434e7baf48bcd32b5bd0e3b6864390338278f2c6c90b0f1773ce"
+    }
+  }
+}

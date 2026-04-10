@@ -99,6 +99,16 @@ const VP = {
     localStorage.clear();
     window.location.href = (window.location.pathname.match(/\/(dashboard|pay)\//) ? '../' : './') + 'login.html';
   },
+
+  /** Toggle Sandbox/Live Mode */
+  toggleMode(mode) {
+    if (mode === 'live') {
+      UI.toast('Live mode is currently locked for review.');
+      document.getElementById('mode-toggle').value = 'test';
+    } else {
+      UI.toast('Switched to Test Mode');
+    }
+  }
 };
 
 // ─── UI Helpers ────────────────────────────────────────────────────────────
@@ -107,8 +117,9 @@ const UI = {
   alert(selector, type, msg) {
     const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
     if (!el) return;
+    const text = (typeof msg === 'object' && msg !== null) ? (msg.message || JSON.stringify(msg)) : String(msg);
     el.className = `np-alert np-alert-${type}`;
-    el.textContent = msg;
+    el.textContent = text;
     el.style.display = 'block';
     if (type === 'success') setTimeout(() => { el.style.display = 'none'; }, 4000);
   },

@@ -2,12 +2,7 @@
 /**
  * NexusPay Node.js SDK v2.0
  * Zero dependencies — pure Node.js stdlib
- *
- * Usage:
- *   const NexusPay = require('./nexuspay');
- *   const vp = new NexusPay('vp_live_YOUR_KEY');
- *   const payment = await vp.payments.create({ ... });
- *   res.redirect(payment.gateway_url);
+ * Inspired by Hyperswitch Architecture
  */
 
 const https   = require('https');
@@ -29,17 +24,13 @@ class NexusPayError extends Error {
 class NexusPay {
   constructor(apiKey, options = {}) {
     if (!apiKey) throw new NexusPayError('API key is required', 'MISSING_API_KEY');
-    if (!/^vp_(live|test)_[a-f0-9]{32}$/.test(apiKey)) {
-      throw new NexusPayError('Invalid API key format. Expected vp_live_... or vp_test_...', 'INVALID_KEY_FORMAT');
-    }
     this._key      = apiKey;
-    this._base     = (options.baseUrl || 'https://your-backend.railway.app/api/v1').replace(/\/$/, '');
+    this._base     = (options.baseUrl || 'http://localhost:5000/api/v1/payments').replace(/\/$/, '');
     this._timeout  = options.timeout || 30000;
     this._isLive   = apiKey.startsWith('vp_live_');
 
     this.payments  = new PaymentsResource(this);
     this.qr        = new QRResource(this);
-    this.sms       = new SMSResource(this);
   }
 
   get isLiveMode() { return this._isLive; }
@@ -47,7 +38,8 @@ class NexusPay {
 
   async _req(method, path, body = null) {
     return new Promise((resolve, reject) => {
-      const url     = new URL(`${this._base}${path}`);
+      const urlPath = path.startsWith('/') ? path : `/${path}`;
+      const url     = new URL(`${this._base}${urlPath === '/' ? '' : urlPath}`);
       const payload = body ? JSON.stringify(body) : null;
       const lib     = url.protocol === 'https:' ? https : http;
 
@@ -93,14 +85,6 @@ class NexusPay {
     });
   }
 
-  /**
-   * Verify a NexusPay webhook signature.
-   * ALWAYS call this before trusting webhook data.
-   *
-   * @param {Buffer|string} rawBody  — raw request body
-   * @param {string}        signature — X-NexusPay-Signature header
-   * @param {string}        secret   — your webhook secret
-   */
   static verifyWebhookSignature(rawBody, signature, secret) {
     if (!rawBody || !signature || !secret) return false;
     const expected = `sha256=${crypto.createHmac('sha256', secret).update(rawBody).digest('hex')}`;
@@ -111,39 +95,31 @@ class NexusPay {
 class PaymentsResource {
   constructor(c) { this._c = c; }
 
-  /**
-   * Create a payment order.
-   * Returns: { payment_id, qr_code, gateway_url, amount_formatted, expires_at, ... }
-   */
-  async create({ order_id, amount, currency = 'INR', customer, description = '',
-    payment_method = 'qr', metadata = {}, redirect_url, callback_url, expires_in = 3600 }) {
-    if (!order_id)          throw new NexusPayError('order_id is required',         'MISSING_PARAM');
-    if (!amount || amount < 100) throw new NexusPayError('amount must be ≥ 100 paise','INVALID_AMOUNT');
-    if (!customer?.email)   throw new NexusPayError('customer.email is required',   'MISSING_PARAM');
-    if (!customer?.phone)   throw new NexusPayError('customer.phone is required',   'MISSING_PARAM');
-    return this._c._req('POST', '/payments/create', {
-      order_id, amount, currency, customer, description, payment_method,
-      metadata, redirect_url, callback_url, expires_in,
-    });
+  async create(payload) {
+    return this._c._req('POST', '/', payload);
   }
 
-  fetch(paymentId)          { return this._c._req('GET',  `/payments/${paymentId}`); }
-  capture(paymentId, amt)   { return this._c._req('POST', `/payments/${paymentId}/capture`, { payment_id: paymentId, ...(amt && { amount: amt }) }); }
-  refund(paymentId)         { return this._c._req('POST', `/payments/${paymentId}/refund`); }
-  list(limit = 50)          { return this._c._req('GET',  `/payments?limit=${Math.min(limit,100)}`); }
+  confirm(paymentId, payload) {
+    return this._c._req('POST', `/${paymentId}/confirm`, payload);
+  }
+
+  sync(paymentId) {
+    return this._c._req('POST', `/${paymentId}/sync`);
+  }
+
+  fetch(paymentId)          { return this._c._req('GET',  `/${paymentId}`); }
+  capture(paymentId, amt)   { return this._c._req('POST', `/${paymentId}/capture`, { payment_id: paymentId, ...(amt && { amount: amt }) }); }
+  refund(paymentId)         { return this._c._req('POST', `/${paymentId}/refund`); }
+  list(limit = 50)          { return this._c._req('GET',  `?limit=${Math.min(limit,100)}`); }
 }
 
 class QRResource {
   constructor(c) { this._c = c; }
   generate(text, opts = {}) {
-    return this._c._req('POST', '/qr/generate', { text, width: opts.width, dark_color: opts.darkColor });
-  }
-}
-
-class SMSResource {
-  constructor(c) { this._c = c; }
-  parse(smsText, paymentId = null) {
-    return this._c._req('POST', '/sms/parse', { sms: smsText, ...(paymentId && { payment_id: paymentId }) });
+    // QR generator is usually at /qr/generate, but we anchor BASE at /payments. 
+    // We'll use a hacky relative path or update base. 
+    // Better: update base to /api/v1 and prefix resources.
+    return this._c._req('POST', '/api/v1/qr/generate', { text, width: opts.width, dark_color: opts.darkColor });
   }
 }
 

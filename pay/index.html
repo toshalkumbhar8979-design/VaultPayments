@@ -19,11 +19,14 @@
         }
 
         :root {
-            --brand: #000000;
-            /* Default if not loaded */
-            --brand-dark: #111111;
+            --brand: #5b4fff;
+            --brand-dark: #483dff;
             --font: 'Plus Jakarta Sans', system-ui, sans-serif;
             --mono: 'JetBrains Mono', monospace;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --text: #0f172a;
         }
 
         body {
@@ -75,47 +78,36 @@
             }
         }
 
-        /* ── Split Layout ────────── */
-        .checkout {
+        /* ── Centered Modal Layout ── */
+        .checkout-wrap {
             min-height: 100vh;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            opacity: 0;
-        }
-
-        /* ── Left Panel ──────────── */
-        .left {
-            background: var(--brand);
-            padding: 64px 56px;
             display: flex;
-            flex-direction: column;
-            color: white;
-            position: relative;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background: var(--bg);
+        }
+
+        .checkout-card {
+            background: var(--card);
+            width: 100%;
+            max-width: 480px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .1);
             overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
         }
 
-        .left::before {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, .03);
-            border-radius: 50%;
-            top: -150px;
-            right: -100px;
-            pointer-events: none;
+        .c-header {
+            background: var(--brand);
+            padding: 32px 40px;
+            color: white;
+            text-align: center;
         }
 
-        .left::after {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, .02);
-            border-radius: 50%;
-            bottom: -50px;
-            left: -100px;
-            pointer-events: none;
+        .c-body {
+            padding: 32px 40px;
         }
 
         .biz-header {
@@ -699,153 +691,65 @@
         <div class="spinner"></div>
     </div>
 
-    <div class="checkout" id="checkout-wrap">
+    <div class="checkout-wrap" id="checkout-wrap">
+        <div class="checkout-card">
+            <header class="c-header">
+                <div class="biz-logo" id="biz-logo">V</div>
+                <h1 id="biz-name">Business Name</h1>
+                <p id="biz-type">Secure Payment</p>
+            </header>
 
-        <!-- LEFT -->
-        <div class="left">
-            <div class="biz-header">
-                <div class="biz-logo" id="biz-logo"><span id="biz-initial">?</span></div>
-                <div>
-                    <div class="biz-name" id="biz-name">Loading...</div>
-                    <div class="biz-type" id="biz-type">Secure Payment</div>
-                </div>
-            </div>
-
-            <div class="amount-block">
-                <div class="amount-label">Amount Due</div>
-                <div class="amount-val" id="amount-val">—</div>
-                <div class="amount-desc" id="amount-desc">Payment Request</div>
-
-                <div class="order-info">
-                    <div class="oi-row"><span class="oi-label">Payment ID</span><span class="oi-val"
-                            id="left-pid">—</span></div>
-                    <div class="oi-row"><span class="oi-label">Customer</span><span class="oi-val"
-                            id="left-customer">—</span></div>
-                    <div class="oi-row"><span class="oi-label">Currency</span><span class="oi-val"
-                            id="left-currency">—</span></div>
+            <div class="c-body">
+                <div style="text-align:center;margin-bottom:32px;">
+                    <div id="amount-val" style="font-size:44px;font-weight:900;letter-spacing:-2px;color:var(--brand);">₹0.00</div>
+                    <div id="left-pid" style="font-size:11px;color:#9ca3af;margin-top:8px;font-family:var(--mono);">pay_...</div>
                 </div>
 
-                <div class="sec-badges">
-                    <div class="sec-badge">🔒 256-bit TLS</div>
-                    <div class="sec-badge">✓ PCI Compliant</div>
-                    <div class="sec-badge">⚡ Instant Confirmation</div>
+                <div class="tabs" id="pay-tabs">
+                    <button class="tab active" onclick="switchTab('qr', this)">Scan UPI QR</button>
+                    <button class="tab" onclick="switchTab('sms', this)">Verify SMS</button>
+                </div>
+
+                <div id="tab-qr" style="display:flex;flex-direction:column;align-items:center;">
+                    <div class="qr-wrap">
+                        <img id="qr-img" src="" alt="UPI QR" />
+                        <div class="qr-tag">UPI DYNAMIC QR</div>
+                    </div>
+                </div>
+
+                <div id="tab-sms" style="display:none;flex-direction:column;gap:16px;">
+                    <textarea id="sms-input" class="sms-textarea" placeholder="Paste bank SMS..."></textarea>
+                    <button class="btn btn-brand" onclick="verifySMS()" id="sms-btn">Verify SMS</button>
+                    <div id="sms-result" class="sms-result">
+                        <h4 id="sms-result-title"></h4>
+                        <div id="sms-result-rows"></div>
+                    </div>
+                </div>
+
+                <div id="success-screen">
+                    <div class="success-check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+                    <h2 style="font-size:24px;font-weight:900;margin-top:16px;">Success! 🎉</h2>
+                    <div class="receipt-mini">
+                        <div class="receipt-row"><span class="rl">Amount</span><span class="rv" id="s-amount">—</span></div>
+                        <div class="receipt-row"><span class="rl">Payment ID</span><span class="rv" id="s-pid" style="font-size:11px;">—</span></div>
+                    </div>
+                    <button class="btn btn-brand" id="continue-btn" style="display:none;margin-top:16px;">Continue →</button>
+                </div>
+
+                <div id="error-screen">
+                    <div style="font-size:48px;">❌</div>
+                    <h2 style="font-size:20px;font-weight:800;" id="error-title">Error</h2>
+                    <p id="error-msg"></p>
+                </div>
+
+                <div class="p-footer">
+                    <span style="font-size:11px;color:#9ca3af;">Secured by <strong style="color:var(--brand);">VaultPayments</strong></span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- RIGHT -->
-        <div class="right">
 
-            <div class="powered-row">
-                <a href="../" class="powered" target="_blank">
-                    <div class="powered-icon"><svg viewBox="0 0 24 24">
-                            <path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" />
-                        </svg></div>
-                    <span>Powered by <strong>NexusPay</strong></span>
-                </a>
-            </div>
-
-            <!-- Tabs -->
-            <div class="tabs" id="pay-tabs">
-                <button class="tab active" onclick="switchTab('qr',this)">📱 Scan QR</button>
-                <button class="tab" onclick="switchTab('sms',this)">💬 Confirm SMS</button>
-            </div>
-
-            <!-- QR Tab -->
-            <div id="tab-qr">
-                <div class="qr-wrap">
-                    <img id="qr-img" src="" alt="Payment QR Code" />
-                    <div class="qr-tag">SCAN TO PAY</div>
-                </div>
-
-                <div class="app-pills">
-                    <div class="app-pill"><span
-                            style="background:#00b9f1;width:8px;height:8px;border-radius:50%;"></span>PhonePe</div>
-                    <div class="app-pill"><span
-                            style="background:#4285f4;width:8px;height:8px;border-radius:50%;"></span>GPay</div>
-                    <div class="app-pill"><span
-                            style="background:#00baf2;width:8px;height:8px;border-radius:50%;"></span>Paytm</div>
-                    <div class="app-pill"><span
-                            style="background:#002970;width:8px;height:8px;border-radius:50%;"></span>BHIM</div>
-                </div>
-
-                <div class="qr-help">
-                    <h3>Open any UPI app and scan</h3>
-                    <p>Payment will confirm automatically once you pay</p>
-                </div>
-
-                <div style="width:100%;">
-                    <div class="timer-bar">
-                        <div class="timer-fill" id="timer-fill" style="width:100%;"></div>
-                    </div>
-                    <div class="timer-row">
-                        <span>Link expires in</span>
-                        <span class="timer-countdown" id="timer-text">—</span>
-                    </div>
-                </div>
-
-                <div class="divider">or already paid?</div>
-
-                <button class="btn btn-brand" onclick="checkStatus(true)" id="verify-btn">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    I've Paid — Verify Now
-                </button>
-
-                <p style="text-align:center; font-size:12px; color:#9ca3af; margin-top:12px;"> 
-                    Still stuck? <a href="#" onclick="switchTab('sms',document.querySelectorAll('.tab')[1]);return false;" style="color:var(--brand); text-decoration:none; font-weight:600;">Confirm via SMS</a>
-                </p>
-            </div>
-
-            <!-- SMS Tab -->
-            <div id="tab-sms">
-                <label class="sms-label">Paste your bank SMS below</label>
-                <textarea id="sms-input" class="sms-textarea"
-                    placeholder="Your a/c XXXX1234 is credited INR 499.00 by UPI. Ref No: 312456789012. -HDFC Bank"></textarea>
-
-                <div id="sms-result" class="sms-result">
-                    <h4 id="sms-result-title" style="font-size:14px;font-weight:800;margin-bottom:8px;"></h4>
-                    <div id="sms-result-rows"></div>
-                </div>
-
-                <button class="btn btn-brand" onclick="verifySMS()" id="sms-btn">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="m21 21-4.35-4.35" />
-                    </svg>
-                    Verify Payment
-                </button>
-
-                <button class="btn btn-ghost-v" onclick="switchTab('qr',document.querySelectorAll('.tab')[0])">
-                    ← Back to QR
-                </button>
-            </div>
-
-            <!-- Success -->
-            <div id="success-screen">
-                <div class="success-check"><svg viewBox="0 0 24 24">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg></div>
-                <h2 style="font-size:24px;font-weight:900;">Payment Confirmed! 🎉</h2>
-                <p style="font-size:14px;color:#6b7280;max-width:280px;line-height:1.6;">A receipt has been emailed to
-                    you. Thank you!</p>
-                <div class="receipt-mini">
-                    <div class="receipt-row"><span class="rl">Amount</span><span class="rv" id="s-amount">—</span></div>
-                    <div class="receipt-row"><span class="rl">Payment ID</span><span class="rv" id="s-pid"
-                            style="font-size:11px;">—</span></div>
-                    <div class="receipt-row"><span class="rl">Time</span><span class="rv" id="s-time">—</span></div>
-                </div>
-                <button class="btn btn-brand" id="continue-btn" style="display:none;">Continue →</button>
-            </div>
-
-            <!-- Error -->
-            <div id="error-screen">
-                <div style="font-size:48px;">❌</div>
-                <h2 style="font-size:20px;font-weight:800;" id="error-title">Payment Not Found</h2>
-                <p style="font-size:14px;color:#6b7280;" id="error-msg">This link may be invalid or expired.</p>
-            </div>
 
         </div>
     </div>

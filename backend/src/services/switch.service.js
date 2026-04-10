@@ -12,6 +12,7 @@ const { v4: uuidv4 }             = require('uuid');
 const connectors                 = require('../connectors');
 const { payments, transactions } = require('../config/database');
 const { getDb }                  = require('../config/database');
+const PaymentClient              = require('../prism/PaymentClient');
 const { selectBestConnector, getConnectorMetrics } = require('../engine/router');
 const logger                     = require('../utils/logger');
 
@@ -46,81 +47,94 @@ async function processPayment(intent) {
     };
   }
 
-  // Step 2: Select the best connector using Intelligent Routing Engine
-  const connector = await selectBestConnector(available, intent);
-  logger.info(`[SWITCH] Selected connector: ${connector.name} for payment ${paymentId}`);
+  // Step 2: Select the best connector logic
+  const connectorDef = await selectBestConnector(available, intent);
+  logger.info(`[SWITCH] Selected connector: ${connectorDef.name} for payment ${paymentId}`);
 
-  // Step 3: Authorize through the connector
+  // Step 3: Authorize through Prism PaymentClient
   let result;
   let retryCount = 0;
 
-  while (retryCount <= connector.maxRetries) {
+  // We construct the unified config like Hyperswitch
+  const config = {
+    connectorConfig: {
+      [connectorDef.name]: {
+        isLive: connectorDef.isLive,
+        apiKey: 'masked', // pulled by Vault natively behind scenes
+      }
+    }
+  };
+
+  const client = new PaymentClient(config);
+
+  while (retryCount <= connectorDef.maxRetries) {
     try {
-      result = await connector.authorize({
-        paymentId,
-        amount,
-        currency,
-        merchantName: merchant.business_name || merchant.name,
-        merchantUpiId: merchant.upi_id || '',
+      result = await client.authorize({
+        merchantTransactionId: paymentId,
+        amount: { minorAmount: amount, currency },
+        paymentMethod: { [paymentMethod]: { cardToken, cardLast4, cardBrand, _testCardNumber } },
         description,
-        cardToken,
-        cardLast4,
-        cardBrand,
-        _testCardNumber,
+        merchantName: merchant.business_name || merchant.name,
+        merchantUpiId: merchant.upi_id || ''
       });
 
-      if (result.success || result.status === 'declined') break;
+      // PaymentClient handles mapping to generic success/status model
+      if (result.success || result.status === 'FAILED') break;
 
-      logger.warn(`[SWITCH] Connector ${connector.name} failed (attempt ${retryCount + 1}). Retrying...`);
+      logger.warn(`[SWITCH] Connector ${connectorDef.name} failed (attempt ${retryCount + 1}). Retrying...`);
       retryCount++;
     } catch (err) {
-      logger.error(`[SWITCH] Connector error (attempt ${retryCount + 1}):`, err);
+      logger.error(`[SWITCH] Prism client error (attempt ${retryCount + 1}):`, err);
       retryCount++;
-      if (retryCount > connector.maxRetries) {
-        result = { success: false, connectorRef: null, status: 'error', rawResponse: { error: err.message } };
+      if (retryCount > connectorDef.maxRetries) {
+        result = { success: false, connectorRef: null, status: 'FAILED', rawResponse: { error: err.message } };
       }
     }
   }
 
   // Step 4: Record connector metrics in DB
-  await recordMetric(merchantId, connector.name, result.success, Date.now());
+  await recordMetric(merchantId, connectorDef.name, result.success, Date.now());
 
   return {
     success:       result.success,
-    connectorName: connector.name,
+    connectorName: connectorDef.name,
     connectorRef:  result.connectorRef,
     status:        result.status,
-    qrCode:        result.qrCode || null,
-    virtualAccount: result.virtualAccount || null,
-    threeDSUrl:    result.threeDSUrl || null,
-    declineCode:   result.declineCode || null,
+    qrCode:        result.action?.payload || null,
+    virtualAccount: null,
+    threeDSUrl:    null,
+    declineCode:   null,
     rawResponse:   result.rawResponse,
     retryCount,
   };
 }
 
 async function capturePayment(merchantId, connectorName, connectorRef, options = {}) {
-  const connector = connectors.getConnector(connectorName);
-  const result    = await connector.capture(connectorRef, options);
+  const config = { connectorConfig: { [connectorName]: {} } };
+  const client = new PaymentClient(config);
+  const result = await client.capture(connectorRef, options);
   await recordMetric(merchantId, connectorName, result.success, Date.now());
   return result;
 }
 
 async function refundPayment(merchantId, connectorName, connectorRef, options = {}) {
-  const connector = connectors.getConnector(connectorName);
-  const result    = await connector.refund(connectorRef, options);
+  const config = { connectorConfig: { [connectorName]: {} } };
+  const client = new PaymentClient(config);
+  const result = await client.refund(connectorRef, options);
   await recordMetric(merchantId, connectorName, result.success, Date.now());
   return result;
 }
 
 async function voidPayment(connectorName, connectorRef) {
-  const connector = connectors.getConnector(connectorName);
-  return connector.void(connectorRef);
+  const config = { connectorConfig: { [connectorName]: {} } };
+  const client = new PaymentClient(config);
+  return client.void(connectorRef);
 }
 
 async function checkPaymentStatus(connectorName, connectorRef) {
-  const connector = connectors.getConnector(connectorName);
-  return connector.getStatus(connectorRef);
+  const config = { connectorConfig: { [connectorName]: {} } };
+  const client = new PaymentClient(config);
+  return client.getStatus(connectorRef);
 }
 
 // ── Metrics Perseverance (Phase 2 Intelligent Routing) ─────────────

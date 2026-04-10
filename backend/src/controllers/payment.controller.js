@@ -129,16 +129,17 @@ const createPayment = async (req, res) => {
 
     return sendSuccess(res, 201, 'Payment created', {
       payment_id:       payment.id,
+      client_secret:    payment.id + '_secret_' + uuidv4().substring(0,8),
       order_id:         payment.order_id,
       amount:           payment.amount,
       amount_formatted: amountFmt,
       currency,
       status:           payment.status,
       connector:        switchResult.connectorName,
+      gateway_url:      gatewayUrl,
       qr_code:          switchResult.qrCode || null,
       virtual_account:  switchResult.virtualAccount || null,
       three_ds_url:     switchResult.threeDSUrl || null,
-      gateway_url:      gatewayUrl,
       expires_at:       expiresAt,
       merchant: {
         name:        merchant.business_name || merchant.name,
@@ -381,4 +382,39 @@ async function fireWebhook(merchant, event, data) {
   });
 }
 
-module.exports = { createPayment, getCheckoutData, getPayment, listPayments, capturePayment, refundPayment, syncPayment };
+// POST /payments/:id/sandbox-capture (Mock webhook for Demo mode)
+const sandboxCapture = async (req, res) => {
+  try {
+    const payment = await payments.findById(req.params.payment_id);
+    if (!payment) return sendError(res, 404, 'Payment not found');
+    
+    // Only capture if pending
+    if ([PAYMENT_STATUS.CAPTURED, PAYMENT_STATUS.FAILED].includes(payment.status)) {
+        return sendSuccess(res, 200, 'Already finalized');
+    }
+
+    const capturedAt = new Date().toISOString();
+    const updated = await payments.update(payment.id, { status: PAYMENT_STATUS.CAPTURED, captured_at: capturedAt });
+
+    // Mock transaction
+    await transactions.create({
+      id:          `txn_${uuidv4().replace(/-/g,'').substring(0,20)}`,
+      payment_id:  payment.id,
+      merchant_id: payment.merchant_id,
+      type:        'credit',
+      amount:      payment.amount,
+      fee:         payment.gateway_fee,
+      net_amount:  payment.net_amount,
+      gateway_ref: `SBX${Date.now()}`,
+      status:      'settled',
+      created_at:  capturedAt,
+    });
+
+    return sendSuccess(res, 200, 'Sandbox Capture simulated successfully', { status: PAYMENT_STATUS.CAPTURED });
+  } catch (err) {
+    logger.error('Sandbox capture failed:', err);
+    return sendError(res, 500, 'Sandbox capture failed');
+  }
+};
+
+module.exports = { createPayment, getCheckoutData, getPayment, listPayments, capturePayment, refundPayment, syncPayment, sandboxCapture };

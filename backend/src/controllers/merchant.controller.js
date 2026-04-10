@@ -1,6 +1,7 @@
 'use strict';
 const { merchants, payments, transactions } = require('../config/database');
 const { sendSuccess, sendError } = require('../utils/response');
+const analytics = require('../services/analytics.service');
 const logger = require('../utils/logger');
 
 const safeMerchant = async (m) => {
@@ -49,18 +50,16 @@ const verifyUPI = async (req, res) => {
 
 // GET /merchants/dashboard
 const getDashboard = async (req, res) => {
-  const stats   = await payments.stats(req.merchantId);
-  const fees    = await transactions.totalFees(req.merchantId);
-  const recent  = await payments.listByMerchant(req.merchantId, 10);
+  const { merchantId } = req;
+  const recent = await payments.listByMerchant(merchantId, 10);
+  const engineStats = await analytics.getMerchantStats(merchantId);
+  const fees = await transactions.totalFees(merchantId);
+
   return sendSuccess(res, 200, 'Dashboard', {
     stats: {
-      total_payments: stats.total_payments || 0,
-      captured:       stats.captured       || 0,
-      pending:        stats.pending        || 0,
-      failed:         stats.failed         || 0,
-      total_volume:   stats.total_volume   || 0,
-      total_fees:     fees,
-      net_volume:     (stats.total_volume || 0) - fees,
+      ...engineStats,
+      total_fees: fees,
+      net_volume: (engineStats.volume || 0) - fees,
     },
     recent_payments: recent,
   });

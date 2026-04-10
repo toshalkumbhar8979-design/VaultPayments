@@ -53,7 +53,7 @@ const globalRateLimiter = mkLimiter({
 });
 const authRateLimiter    = mkLimiter({ windowMs: 900000, max: parseInt(process.env.AUTH_RATE_LIMIT_MAX) || 10, message: 'Too many auth attempts.' });
 const paymentRateLimiter = mkLimiter({ windowMs: 60000,  max: 30 });
-const smsRateLimiter     = mkLimiter({ windowMs: 60000,  max: 20 });
+
 
 // ─── validation.middleware.js ─────────────────────────────────────────────────
 const Joi = require('joi');
@@ -119,11 +119,7 @@ const schemas = {
     brand_color:   Joi.string().optional().allow(''),
     webhook_url:   Joi.string().optional().allow(''),
   }),
-  parseSms: Joi.object({
-    sms:        Joi.string().min(10).max(2000).required(),
-    sender:     Joi.string().max(20).optional().allow(''),
-    payment_id: Joi.string().optional().allow(''),
-  }),
+
 };
 
 // ─── error.middleware.js ──────────────────────────────────────────────────────
@@ -131,19 +127,11 @@ const notFoundHandler = (req, res) => res.status(404).json({
   success: false, error: { code: 'NOT_FOUND', message: `Route ${req.method} ${req.originalUrl} not found` },
 });
 
-const errorHandler = (err, req, res, next) => {
-  const isDev = process.env.NODE_ENV !== 'production';
-  logger.error(`${err.message} — ${req.method} ${req.originalUrl}`);
-  res.status(err.statusCode || err.status || 500).json({
-    success: false,
-    error: { code: err.code || 'INTERNAL_ERROR', message: isDev ? err.message : 'An unexpected error occurred' },
-    ...(isDev && { stack: err.stack }),
-  });
-};
+const errorHandler = require('./error.handler');
 
 module.exports = {
   securityMiddleware,
-  globalRateLimiter, authRateLimiter, paymentRateLimiter, smsRateLimiter,
+  globalRateLimiter, authRateLimiter, paymentRateLimiter,
   validate, schemas,
   notFoundHandler, errorHandler,
 };

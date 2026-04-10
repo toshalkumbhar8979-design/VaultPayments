@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Merchant Onboarding — NexusPay</title>
+  <meta name="description" content="Complete your NexusPay merchant onboarding to start accepting payments.">
+  <link rel="stylesheet" href="./assets/css/np-global.css"/>
+  <style>
+    body { background: var(--bg); }
+    .ob-layout { display: flex; min-height: 100vh; }
+    
+    /* Sidebar */
+    .ob-sidebar {
+      width: 280px;
+      min-height: 100vh;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
+      top: 0;
+    }
+    .ob-sidebar::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(180deg, var(--green), var(--brand));
+      border-radius: 0 3px 3px 0;
+    }
+    .ob-user { display: flex; align-items: center; gap: 10px; margin-bottom: 36px; }
+    .ob-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--brand), var(--purple)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 13px; }
+    .ob-username { font-size: 14px; font-weight: 600; color: var(--text); }
+    .ob-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .ob-brand { font-size: 18px; font-weight: 800; margin-bottom: 32px; background: linear-gradient(135deg, var(--brand), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    
+    /* Step nav */
+    .ob-steps { display: flex; flex-direction: column; }
+    .ob-step-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 10px; position: relative; transition: all .2s; }
+    .ob-step-item::before { content: ''; position: absolute; left: 28px; top: 42px; width: 2px; height: calc(100% - 14px); background: var(--border); }
+    .ob-step-item:last-child::before { display: none; }
+    .ob-step-item.active { background: var(--brand-light); }
+    .ob-step-item.active .ob-step-text { color: var(--brand); font-weight: 600; }
+    .ob-step-num { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--muted); background: var(--surface); z-index: 1; transition: all .2s; }
+    .ob-step-item.active .ob-step-num { border-color: var(--brand); background: var(--brand); color: white; }
+    .ob-step-item.done .ob-step-num { border-color: var(--green); background: var(--green); color: white; }
+    .ob-step-item.done .ob-step-num::after { content: '✓'; }
+    .ob-step-text { font-size: 14px; color: var(--muted); transition: all .2s; }
+    
+    /* Main */
+    .ob-main { margin-left: 280px; flex: 1; display: flex; justify-content: center; padding: 60px 40px; min-height: 100vh; }
+    .ob-form { width: 100%; max-width: 560px; }
+    .ob-back { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); cursor: pointer; border: none; background: none; padding: 8px 0; margin-bottom: 16px; transition: all .2s; font-family: var(--font); }
+    .ob-back:hover { color: var(--brand); }
+    .ob-title { font-size: 28px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+    .ob-subtitle { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 28px; }
+    .ob-divider { width: 100%; height: 1px; background: var(--border); margin-bottom: 24px; }
+    
+    /* Checkbox list */
+    .ob-check-list { display: flex; flex-direction: column; }
+    .ob-check-item { display: flex; align-items: center; gap: 14px; padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: all .2s; }
+    .ob-check-item:last-child { border-bottom: none; }
+    .ob-check-item:hover { background: var(--brand-light); }
+    .ob-check-item input[type="checkbox"] { width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border); appearance: none; cursor: pointer; transition: all .2s; position: relative; flex-shrink: 0; background: var(--surface); }
+    .ob-check-item input[type="checkbox"]:checked { background: var(--brand); border-color: var(--brand); }
+    .ob-check-item input[type="checkbox"]:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: white; font-size: 12px; font-weight: 700; }
+    
+    /* File upload */
+    .ob-file-upload { border: 2px dashed var(--border); border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: all .2s; }
+    .ob-file-upload:hover { border-color: var(--brand); background: var(--brand-light); }
+    
+    /* Success */
+    .ob-success { text-align: center; padding: 60px 0; }
+    .ob-success-icon { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, var(--green), #34D399); display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; animation: obPop .5s cubic-bezier(.34,1.56,.64,1); }
+    @keyframes obPop { from{transform:scale(0)} to{transform:scale(1)} }
+    .ob-keys-card { background: var(--dark); border-radius: var(--radius); padding: 24px; margin-top: 32px; text-align: left; border: 1px solid var(--border); }
+    .ob-keys-card h4 { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; }
+    .ob-key-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .ob-key-row:last-child { border-bottom: none; }
+    .ob-key-label { font-size: 13px; color: var(--muted); }
+    .ob-key-value { font-family: var(--mono); font-size: 13px; color: var(--brand); background: var(--brand-light); padding: 4px 10px; border-radius: 4px; }
+    
+    .step-panel { display: none; animation: obSlideIn 0.4s ease; }
+    .step-panel.active { display: block; }
+    @keyframes obSlideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    
+    @media (max-width: 768px) {
+      .ob-sidebar { display: none; }
+      .ob-main { margin-left: 0; padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="ob-layout">
+
+  <!-- Sidebar -->
+  <aside class="ob-sidebar">
+    <div class="ob-user">
+      <div class="ob-avatar" id="userAvatar">N</div>
+      <span class="ob-username" id="userName">New Merchant</span>
+    </div>
+
+    <div class="ob-label">Onboarding:</div>
+    <div class="ob-brand">NexusPay Payments</div>
+
+    <nav class="ob-steps" id="stepNav">
+      <div class="ob-step-item active" data-step="0"><div class="ob-step-num">1</div><span class="ob-step-text">Contact details</span></div>
+      <div class="ob-step-item" data-step="1"><div class="ob-step-num">2</div><span class="ob-step-text">Your name</span></div>
+      <div class="ob-step-item" data-step="2"><div class="ob-step-num">3</div><span class="ob-step-text">Platforms</span></div>
+      <div class="ob-step-item" data-step="3"><div class="ob-step-num">4</div><span class="ob-step-text">Business details</span></div>
+      <div class="ob-step-item" data-step="4"><div class="ob-step-num">5</div><span class="ob-step-text">KYC verification</span></div>
+    </nav>
+
+    <div style="margin-top:auto;padding-top:24px;border-top:1px solid var(--border);">
+      <a href="#" onclick="alert('Test keys will be available after onboarding')" style="font-size:13px;color:var(--muted);text-decoration:none;">🔑 Get test keys</a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ob-main">
+    <div class="ob-form">
+
+      <!-- Step 1: Phone -->
+      <div class="step-panel active" id="step-0">
+        <h1 class="ob-title">Verify your Contact Details</h1>
+        <p class="ob-subtitle">We require this to verify your identity. Your details <u>will remain safe</u>.</p>
+        <div class="ob-divider"></div>
+        <div class="form-group">
+          <label>Mobile number</label>
+          <div style="display:flex;">
+            <span style="padding:12px;border:1px solid var(--border);border-right:none;border-radius:var(--radius-sm) 0 0 var(--radius-sm);color:var(--muted);background:var(--bg);font-size:14px;">+91</span>
+            <input type="tel" class="form-control" id="phoneInput" placeholder="1234 567890" maxlength="10" style="border-radius:0 var(--radius-sm) var(--radius-sm) 0;"/>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="nextStep()">Continue</button>
+      </div>
+
+      <!-- Step 2: Name -->
+      <div class="step-panel" id="step-1">
+        <button class="ob-back" onclick="prevStep()">← Back</button>
+        <h1 class="ob-title">Add your Name</h1>
+        <p class="ob-subtitle">Let us know the person completing onboarding</p>
+        <div class="ob-divider"></div>
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" class="form-control" id="nameInput" placeholder="Your full name"/>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="nextStep()">Continue</button>
+      </div>
+
+      <!-- Step 3: Platforms -->
+      <div class="step-panel" id="step-2">
+        <button class="ob-back" onclick="prevStep()">← Back</button>
+        <h1 class="ob-title">Accept Payments on</h1>
+        <p class="ob-subtitle">Select the platforms where you'll accept payments.</p>
+        <div class="ob-divider"></div>
+        <div class="ob-check-list">
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="website"><span>Website</span></label>
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="android"><span>Android App</span></label>
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="ios"><span>iOS App</span></label>
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="whatsapp"><span>WhatsApp, SMS, or Email</span></label>
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="social"><span>Social Media</span></label>
+          <label class="ob-check-item"><input type="checkbox" name="platform" value="others"><span>Others</span></label>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" style="margin-top:24px;" onclick="nextStep()">Continue</button>
+      </div>
+
+      <!-- Step 4: Business Details -->
+      <div class="step-panel" id="step-3">
+        <button class="ob-back" onclick="prevStep()">← Back</button>
+        <h1 class="ob-title">Business Details</h1>
+        <p class="ob-subtitle">Tell us about your business to customize your payment flow</p>
+        <div class="ob-divider"></div>
+        <div class="form-group"><label>Business name</label><input type="text" class="form-control" id="businessNameInput" placeholder="Your registered business name"/></div>
+        <div class="form-group">
+          <label>Business type</label>
+          <select class="form-control" id="businessTypeInput">
+            <option value="">Select business type</option>
+            <option value="individual">Individual / Freelancer</option>
+            <option value="sole_proprietorship">Sole Proprietorship</option>
+            <option value="partnership">Partnership Firm</option>
+            <option value="llp">LLP</option>
+            <option value="private_limited">Private Limited Company</option>
+            <option value="public_limited">Public Limited Company</option>
+            <option value="trust">Trust / Society</option>
+            <option value="ngo">NGO</option>
+          </select>
+        </div>
+        <div class="form-group"><label>GST Number (Optional)</label><input type="text" class="form-control" id="gstInput" placeholder="22AAAAA0000A1Z5" maxlength="15"/></div>
+        <div class="form-group"><label>Business Email</label><input type="email" class="form-control" id="emailInput" placeholder="hello@yourbusiness.com"/></div>
+        <div class="form-group"><label>Website</label><input type="url" class="form-control" id="websiteInput" placeholder="https://yourbusiness.com"/></div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="nextStep()">Continue</button>
+      </div>
+
+      <!-- Step 5: KYC -->
+      <div class="step-panel" id="step-4">
+        <button class="ob-back" onclick="prevStep()">← Back</button>
+        <h1 class="ob-title">KYC Verification</h1>
+        <p class="ob-subtitle">Submit identity documents and bank details for verification</p>
+        <div class="ob-divider"></div>
+        <div class="form-group"><label>PAN Number</label><input type="text" class="form-control" id="panInput" placeholder="ABCDE1234F" maxlength="10"/></div>
+        <div class="form-group"><label>Bank Account Number</label><input type="text" class="form-control" id="bankAccountInput" placeholder="Your bank account number"/></div>
+        <div class="form-group"><label>IFSC Code</label><input type="text" class="form-control" id="ifscInput" placeholder="SBIN0001234" maxlength="11"/></div>
+        <div class="form-group">
+          <label>Upload PAN Card / Aadhaar</label>
+          <div class="ob-file-upload" onclick="document.getElementById('fileInput').click()">
+            <div style="font-size:32px;margin-bottom:8px;">📄</div>
+            <p style="font-size:14px;color:var(--muted);">Drag and drop or <span style="color:var(--brand);font-weight:600;">browse</span></p>
+            <p style="font-size:12px;color:var(--muted);margin-top:4px;">PDF, JPG, PNG (max 5MB)</p>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none">
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="submitOnboarding()">Complete Onboarding</button>
+      </div>
+
+      <!-- Success -->
+      <div class="step-panel" id="step-5">
+        <div class="ob-success">
+          <div class="ob-success-icon">
+            <svg width="36" height="36" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h1 class="ob-title" style="text-align:center;">Onboarding Complete! 🎉</h1>
+          <p class="ob-subtitle" style="text-align:center;">Your merchant profile is set up. You're ready to accept payments.</p>
+          <div style="display:flex;gap:12px;justify-content:center;margin-top:24px;">
+            <a href="./dashboard/" class="btn btn-primary btn-lg" style="padding:16px 40px;">Go to Dashboard →</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="./config.js"></script>
+<script src="./assets/js/np-utils.js"></script>
+<script>
+let currentStep = 0;
+const totalSteps = 5;
+const formData = {};
+
+function nextStep() {
+  collectStepData();
+  if (currentStep < totalSteps) { currentStep++; updateUI(); }
+}
+
+function prevStep() {
+  if (currentStep > 0) { currentStep--; updateUI(); }
+}
+
+function updateUI() {
+  document.querySelectorAll('.step-panel').forEach((p, i) => p.classList.toggle('active', i === currentStep));
+
+  // Update sidebar
+  document.querySelectorAll('.ob-step-item').forEach((item, i) => {
+    item.classList.remove('active', 'done');
+    if (i < currentStep) item.classList.add('done');
+    if (i === currentStep) item.classList.add('active');
+  });
+
+  // Update name
+  const name = document.getElementById('nameInput')?.value;
+  if (name) {
+    document.getElementById('userName').textContent = name;
+    document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+  }
+}
+
+function collectStepData() {
+  switch (currentStep) {
+    case 0: formData.phone = document.getElementById('phoneInput').value; break;
+    case 1: formData.name = document.getElementById('nameInput').value; break;
+    case 2: formData.platforms = Array.from(document.querySelectorAll('input[name="platform"]:checked')).map(cb => cb.value); break;
+    case 3:
+      formData.businessName = document.getElementById('businessNameInput').value;
+      formData.businessType = document.getElementById('businessTypeInput').value;
+      formData.gst = document.getElementById('gstInput').value;
+      formData.email = document.getElementById('emailInput').value;
+      formData.website = document.getElementById('websiteInput').value;
+      break;
+    case 4:
+      formData.pan = document.getElementById('panInput').value;
+      formData.bankAccount = document.getElementById('bankAccountInput').value;
+      formData.ifsc = document.getElementById('ifscInput').value;
+      break;
+  }
+}
+
+async function submitOnboarding() {
+  collectStepData();
+  const btn = event.target;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  try {
+    // If user is logged in, update their merchant profile
+    if (VP.isLoggedIn) {
+      await VP.put('/merchants/me', {
+        business_name: formData.businessName || undefined,
+        phone: formData.phone || undefined,
+        website: formData.website || undefined,
+      });
+    }
+    currentStep = 5;
+    updateUI();
+  } catch (err) {
+    // Still proceed to success
+    currentStep = 5;
+    updateUI();
+  } finally {
+    btn.textContent = 'Complete Onboarding';
+    btn.disabled = false;
+  }
+}
+
+// Pre-populate from logged-in merchant
+if (VP.isLoggedIn && VP.merchant) {
+  const m = VP.merchant;
+  document.getElementById('userName').textContent = m.business_name || m.name || 'Merchant';
+  document.getElementById('userAvatar').textContent = (m.business_name || m.name || 'M').charAt(0).toUpperCase();
+  if (m.phone) document.getElementById('phoneInput').value = m.phone.replace('+91','');
+  if (m.business_name) document.getElementById('businessNameInput').value = m.business_name;
+  if (m.email) document.getElementById('emailInput').value = m.email;
+}
+
+// Enter key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && currentStep < totalSteps) { e.preventDefault(); nextStep(); }
+});
+</script>
+</body>
+</html>

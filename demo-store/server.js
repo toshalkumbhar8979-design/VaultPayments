@@ -34,7 +34,7 @@ app.post('/checkout', async (req, res) => {
         // Create a payment order on NexusPay
         const payment = await vp.payments.create({
             order_id: `DEMO-${Date.now()}`,
-            amount: total * 100, // Rs 10 -> 1000 paise
+            amount: 100, // Hardcoded Rs 1 for testing (100 paise)
             currency: 'INR',
             customer: {
                 name: customerName,

@@ -139,6 +139,47 @@ async function listTokens(context = {}) {
   return await tokens.listAll();
 }
 
+/**
+ * Orchestration: Securely store connector credentials
+ */
+async function storeCredentials(merchantId, connectorName, credentials, context = {}) {
+  try {
+    const { merchant_credentials } = require('./vault.db');
+    const encryptedCreds = encrypt(JSON.stringify(credentials));
+    const now = new Date().toISOString();
+
+    await merchant_credentials.upsert({
+      merchant_id: merchantId,
+      connector_name: connectorName,
+      credentials_encrypted: encryptedCreds,
+      updated_at: now
+    });
+
+    pciLogger.logAccess(context.userId, 'merchant_credentials', 'store', 'success', { connectorName });
+    return true;
+  } catch (err) {
+    logger.error(`[VAULT] Credential storage failed: ${err.message}`);
+    throw err;
+  }
+}
+
+/**
+ * Orchestration: Securely retrieve connector credentials
+ */
+async function getCredentials(merchantId, connectorName, context = {}) {
+  try {
+    const { merchant_credentials } = require('./vault.db');
+    const row = await merchant_credentials.find(merchantId, connectorName);
+    if (!row) return null;
+
+    pciLogger.logAccess(context.userId, 'merchant_credentials', 'retrieve', 'success', { connectorName });
+    return JSON.parse(decrypt(row.credentials_encrypted));
+  } catch (err) {
+    logger.error(`[VAULT] Credential retrieval failed: ${err.message}`);
+    return null;
+  }
+}
+
 function detectCardBrand(num) {
   if (/^4/.test(num)) return 'visa';
   if (/^5[1-5]/.test(num)) return 'mastercard';
@@ -171,4 +212,6 @@ module.exports = {
   decrypt,
   isValidLuhn,
   detectCardBrand,
+  storeCredentials,
+  getCredentials,
 };

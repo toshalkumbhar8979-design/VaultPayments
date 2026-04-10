@@ -11,10 +11,15 @@ const path       = require('path');
 
 const { initDb }   = require('./src/config/database');
 const { initVaultDb } = require('./src/vault/vault.db');
+const { initPgPool, query: pgQuery, isAvailable: pgAvailable } = require('./src/config/pg.database');
 const logger       = require('./src/utils/logger');
 const connectors   = require('./src/connectors');
 const switchService = require('./src/services/switch.service');
 const vault        = require('./src/vault/vault.service');
+const ledgerService = require('./src/ledger/ledger.service');
+const { PaymentStateMachine } = require('./src/engine/state-machine');
+const WebhookDispatcher = require('./src/services/webhook-dispatcher');
+const { createIdempotencyMiddleware, cleanupExpiredKeys } = require('./src/middleware/idempotency.middleware');
 const { errorHandler, notFoundHandler, globalRateLimiter, securityMiddleware } = require('./src/middleware');
 
 const app        = express();
@@ -23,14 +28,8 @@ const API_BASE   = `/api/${process.env.API_VERSION || 'v1'}`;
 
 // ─── Security Headers ────────────────────────────────────────────────────────
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc:   ["'self'","'unsafe-inline'"],
-      scriptSrc:  ["'self'", "'unsafe-inline'"],
-      imgSrc:     ["'self'","data:","https:"],
-    },
-  },
+  contentSecurityPolicy: false, // Disabled for demo to allow inline handlers
+  crossOriginResourcePolicy: { policy: "cross-origin" },
   hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
 }));
 
@@ -86,14 +85,16 @@ app.get('/health', (req, res) => res.json({
 }));
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
-const { authRoutes, paymentRoutes, merchantRoutes, smsRoutes, qrRoutes, webhookRoutes } = require('./src/routes');
+const { authRoutes, paymentRoutes, merchantRoutes, qrRoutes, webhookRoutes, routingRoutes, fraudRoutes } = require('./src/routes');
 const billingRoutes = require('./src/routes/billing.route');
 
 app.use(`${API_BASE}/auth`,      authRoutes);
 app.use(`${API_BASE}/payments`,  paymentRoutes);
 app.use(`${API_BASE}/merchants`, merchantRoutes);
-app.use(`${API_BASE}/sms`,       smsRoutes);
+
 app.use(`${API_BASE}/qr`,        qrRoutes);
+app.use(`${API_BASE}/routing`,  routingRoutes);
+app.use(`${API_BASE}/fraud`,    fraudRoutes);
 app.use(`${API_BASE}/webhooks`,  webhookRoutes);
 app.use(`${API_BASE}/billing`,   billingRoutes);
 
@@ -140,23 +141,101 @@ const { startBillingScheduler } = require('./src/services/billing.service');
 // ─── Start ────────────────────────────────────────────────────────────────────
 async function start() {
   try {
+    // 1. SQLite (config, merchants, payments metadata)
     await initDb();
-    logger.info('✅ Database initialized');
+    logger.info('✅ SQLite database initialized (config/metadata)');
 
+    // 2. Vault DB (PCI-isolated, card tokens)
     await initVaultDb();
-    logger.info('🔐 Vault Database initialized');
+    logger.info('🔐 Vault Database initialized (PCI-isolated)');
 
+    // 3. PostgreSQL Ledger (ACID financial data)
+    const pgPool = await initPgPool();
+    if (pgPool) {
+      // Run ledger schema migration
+      const fs = require('fs');
+      const path = require('path');
+      const schemaPath = path.join(__dirname, 'src/ledger/schema/ledger_schema.sql');
+      if (fs.existsSync(schemaPath)) {
+        try {
+          const schema = fs.readFileSync(schemaPath, 'utf-8');
+          await pgPool.query(schema);
+          logger.info('📒 Ledger schema applied to PostgreSQL');
+        } catch (schemaErr) {
+          logger.warn(`📒 Ledger schema warning (may already exist): ${schemaErr.message.split('\n')[0]}`);
+        }
+      }
+      logger.info('🐘 PostgreSQL Ledger initialized (ACID)');
+
+      // Initialize idempotency middleware
+      const idempotencyMiddleware = createIdempotencyMiddleware({ pgQuery, isAvailable: pgAvailable });
+      app.use(idempotencyMiddleware);
+      logger.info('🔑 Idempotency middleware active');
+
+      // Periodic cleanup of expired idempotency keys
+      setInterval(() => cleanupExpiredKeys(pgQuery).catch(() => {}), 60 * 60 * 1000); // Every hour
+    } else {
+      logger.warn('⚠️  PostgreSQL not available — ledger operates in sandbox/memory mode');
+    }
+
+    // 4. Initialize Webhook Dispatcher
+    const { merchants } = require('./src/config/database');
+    const webhookDispatcher = new WebhookDispatcher({
+      pgQuery,
+      isAvailable: pgAvailable,
+      merchantsDb: merchants,
+    });
+    logger.info('📤 Webhook Dispatcher initialized');
+
+    // 5. Initialize State Machine
+    const { getDb } = require('./src/config/database');
+    const stateMachine = new PaymentStateMachine({
+      db: getDb(),
+      ledgerService,
+      webhookDispatcher,
+      pgQuery: pgAvailable() ? pgQuery : null,
+    });
+    logger.info('⚙️  Transaction State Machine initialized');
+
+    // Store on app for route access
+    app.locals.ledgerService = ledgerService;
+    app.locals.stateMachine = stateMachine;
+    app.locals.webhookDispatcher = webhookDispatcher;
+
+    // 6. Payment Connectors (NativeAcquirer = PRIMARY)
     connectors.initDefaults();
     logger.info('✅ Payment connectors initialized');
 
+    // 7. Billing scheduler
     startBillingScheduler();
     logger.info('✅ Billing scheduler background job running');
 
+    // ── Ledger API Routes ──
+    app.get(`${API_BASE}/ledger/balance/:merchantId`, async (req, res) => {
+      try {
+        const balance = await ledgerService.getMerchantBalance(req.params.merchantId);
+        res.json({ success: true, data: balance });
+      } catch (err) {
+        res.status(500).json({ success: false, error: { message: err.message } });
+      }
+    });
+
+    app.get(`${API_BASE}/ledger/entries/:paymentId`, async (req, res) => {
+      try {
+        const entries = await ledgerService.getPaymentEntries(req.params.paymentId);
+        res.json({ success: true, data: { entries } });
+      } catch (err) {
+        res.status(500).json({ success: false, error: { message: err.message } });
+      }
+    });
+
     app.listen(PORT, () => {
-      logger.info(`🚀 ${process.env.PLATFORM_NAME || 'NexusPay'} API listening on port ${PORT}`);
+      logger.info(`🚀 ${process.env.PLATFORM_NAME || 'NexusPay'} PSP API listening on port ${PORT}`);
+      logger.info(`   Mode:        PRIMARY PAYMENT PROCESSOR`);
       logger.info(`   Environment: ${process.env.NODE_ENV}`);
       logger.info(`   API Base:    ${API_BASE}`);
       logger.info(`   Connectors:  ${connectors.getRegistry().map(c => c.name).join(', ')}`);
+      logger.info(`   PostgreSQL:  ${pgAvailable() ? '✅ Connected' : '⚠️  Sandbox mode'}`);
       logger.info(`   Frontend:    ${process.env.FRONTEND_URL || 'not set'}`);
     });
   } catch (err) {

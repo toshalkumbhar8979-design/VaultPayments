@@ -35,6 +35,14 @@ CREATE TABLE IF NOT EXISTS vault_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS idx_vault_created ON vault_tokens(created_at);
+
+CREATE TABLE IF NOT EXISTS merchant_credentials (
+  merchant_id           TEXT NOT NULL,
+  connector_name        TEXT NOT NULL,
+  credentials_encrypted TEXT NOT NULL,
+  updated_at            TEXT NOT NULL,
+  PRIMARY KEY (merchant_id, connector_name)
+);
 `;
 
 async function initVaultDb() {
@@ -66,11 +74,23 @@ const tokens = {
   async delete(token) {
     const result = await getVaultDb().run('DELETE FROM vault_tokens WHERE token = ?', [token]);
     return result.changes > 0;
-  },
-
-  async listAll() {
-    return await getVaultDb().all('SELECT token, brand, last4, created_at FROM vault_tokens ORDER BY created_at DESC');
   }
 };
 
-module.exports = { initVaultDb, getVaultDb, tokens };
+const merchant_credentials = {
+  async upsert(data) {
+    await getVaultDb().run(`
+      INSERT OR REPLACE INTO merchant_credentials (merchant_id, connector_name, credentials_encrypted, updated_at)
+      VALUES (?, ?, ?, ?)
+    `, [data.merchant_id, data.connector_name, data.credentials_encrypted, data.updated_at]);
+  },
+
+  async find(merchantId, connectorName) {
+    return await getVaultDb().get(
+      'SELECT * FROM merchant_credentials WHERE merchant_id = ? AND connector_name = ?',
+      [merchantId, connectorName]
+    );
+  }
+};
+
+module.exports = { initVaultDb, getVaultDb, tokens, merchant_credentials };
